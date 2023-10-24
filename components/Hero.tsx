@@ -4,8 +4,8 @@ import Image from 'next/image'
 
 export const Hero = () => {
   return (
-    <section className="relative flex items-center justify-center mt-8 lg:mt-0">
-      <div className=" bg-white absolute p-8 lg:p-14 rounded-xl z-1">
+    <section className="relative flex items-center justify-center w-full h-[70vh]">
+      <div className=" bg-white absolute p-8 lg:p-14 rounded-xl z-1 mx-4">
         <form className="flex flex-col gap-4">
           <h1 className="text-blue-900 font-semibold text-5xl">
             Encontre seu imóvel ideal
@@ -25,13 +25,12 @@ export const Hero = () => {
           </button>
         </form>
       </div>
-      <div className="relative max-h-[70vh] overflow-hidden">
-        <img
-          alt="alt"
-          className="w-full h-full"
-          src="https://images.unsplash.com/photo-1673865255404-9ccc4b7bc99e?auto=format&fit=crop&q=80&w=5048&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        />
-      </div>
+      <Image
+        alt="alt"
+        fill
+        className="w-full h-full aspect-video object-cover"
+        src="https://images.unsplash.com/photo-1673865255404-9ccc4b7bc99e?auto=format&fit=crop&q=80&w=5048&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      />
     </section>
   )
 }
