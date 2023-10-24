@@ -11,8 +11,8 @@ const fakeLinks = [
 
 export const Footer = () => {
   return (
-    <footer className="w-full bg-blue-950">
-      <section className="max-w-5xl flex gap-6 justify-between mx-auto py-14">
+    <footer className="w-full bg-blue-950 px-8 xl:px-0">
+      <section className="max-w-5xl flex flex-col lg:flex-row gap-6 justify-between mx-auto py-14">
         <Link href="/">
           <Logo />
           <p className="text-white">CRECI: 000000 ES</p>

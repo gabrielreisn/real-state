@@ -34,20 +34,20 @@ export const Header = () => {
   return (
     <>
       <div ref={sentinelRef} />
-      <header className="w-full bg-blue-950 fixed z-10">
+      <header className="px-8 xl:px-0 w-full bg-blue-950 fixed z-10">
         <section
           className={clsx(
-            'max-w-5xl flex gap-6 mx-auto items-center bg-blue-950 transition-height duration-150',
+            'lg:max-w-5xl flex gap-6 mx-auto items-center bg-blue-950 transition-height duration-150',
             hasScrolled ? 'h-16' : 'h-20',
           )}
         >
           <Link href="/">
             <Logo />
           </Link>
-          <h3 className="text-white">Compre</h3>
-          <h3 className="text-white">Alugue</h3>
-          <h3 className="text-white">Como funciona</h3>
-          <h3 className="text-white">Contato</h3>
+          <h3 className="hidden lg:block text-white">Compre</h3>
+          <h3 className="hidden lg:block text-white">Alugue</h3>
+          <h3 className="hidden lg:block text-white">Como funciona</h3>
+          <h3 className="hidden lg:block text-white">Contato</h3>
           <SmallSearchBar />
         </section>
       </header>
@@ -57,7 +57,7 @@ export const Header = () => {
 
 const SmallSearchBar = () => {
   return (
-    <form className="ml-auto">
+    <form className="ml-auto hidden lg:block">
       <div className="relative rounded-full bg-white flex p-2">
         <input
           type="text"
