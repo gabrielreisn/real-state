@@ -7,4 +7,5 @@ export default defineCliConfig({
   },
   // Hosted at https://alexnolasco.sanity.studio after `pnpm --filter studio deploy`.
   studioHost: 'alexnolasco',
+  deployment: { appId: 'xh8mzptfjvrahsvt6xdg62ye' },
 });
