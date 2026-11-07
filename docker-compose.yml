@@ -1,0 +1,90 @@
+name: real-state
+
+x-database-url: &database-url postgres://${POSTGRES_USER:-realstate}:${POSTGRES_PASSWORD:-realstate}@postgres:5432/${POSTGRES_DB:-realstate}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-realstate}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-realstate}
+      POSTGRES_DB: ${POSTGRES_DB:-realstate}
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    image: real-state/api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: [node, dist/migrate.js]
+    environment:
+      DATABASE_URL: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    image: real-state/api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      PORT: 4000
+    ports:
+      - 127.0.0.1:4000:4000
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:4000/health/ready').then((r)=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+
+  web:
+    image: real-state/web:local
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        SANITY_PROJECT_ID: ${SANITY_PROJECT_ID:-1ai1aq1e}
+        SANITY_DATASET: ${SANITY_DATASET:-development}
+    restart: unless-stopped
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
+      SANITY_PROJECT_ID: ${SANITY_PROJECT_ID:-1ai1aq1e}
+      SANITY_DATASET: ${SANITY_DATASET:-development}
+      SANITY_API_READ_TOKEN: ${SANITY_API_READ_TOKEN:-}
+    ports:
+      - 127.0.0.1:3000:3000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  studio:
+    image: real-state/studio:local
+    build:
+      context: .
+      dockerfile: apps/studio/Dockerfile
+      args:
+        SANITY_STUDIO_PROJECT_ID: ${SANITY_STUDIO_PROJECT_ID:-1ai1aq1e}
+        SANITY_STUDIO_DATASET: ${SANITY_STUDIO_DATASET:-development}
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3333:8080
+
+volumes:
+  postgres-data:

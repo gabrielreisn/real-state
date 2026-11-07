@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: real-state
+resources:
+  - ../../base
+images:
+  - { name: real-state/api, newName: ghcr.io/gabrielreisn/real-state-api, newTag: v0.1.0 }
+  - { name: real-state/web, newName: ghcr.io/gabrielreisn/real-state-web, newTag: v0.1.0 }
+  - { name: real-state/studio, newName: ghcr.io/gabrielreisn/real-state-studio, newTag: v0.1.0 }
+configMapGenerator:
+  - name: real-state-config
+    literals:
+      - SITE_URL=https://www.alexnolasco.com.br
+      - SANITY_PROJECT_ID=1ai1aq1e
+      - SANITY_DATASET=production
+patches:
+  - target: { kind: Ingress, name: real-state }
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cert-manager.io/cluster-issuer: letsencrypt
+      - op: replace
+        path: /spec/rules/0/host
+        value: www.alexnolasco.com.br
+      - op: replace
+        path: /spec/rules/1/host
+        value: cms.alexnolasco.com.br
+      - op: add
+        path: /spec/tls
+        value:
+          - secretName: real-state-tls
+            hosts: [www.alexnolasco.com.br, cms.alexnolasco.com.br]

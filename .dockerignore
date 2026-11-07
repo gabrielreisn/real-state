@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.next
+**/.sanity
+**/coverage
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+infra
+README.md

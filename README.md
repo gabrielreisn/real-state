@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Alex Nolasco Imóveis
 
-## Getting Started
+Rebuild of [alexnolasco.com.br](https://www.alexnolasco.com.br): the landing page and one property page, running on static data for now.
 
-First, run the development server:
+| Path | What | Local URL |
+| --- | --- | --- |
+| [apps/web](apps/web) | Next.js website | http://localhost:3000 |
+| [apps/api](apps/api) | NestJS API that stores contact form leads in Postgres | http://localhost:4000 |
+| [apps/studio](apps/studio) | Sanity Studio with the content schemas | http://localhost:3333 |
+| [infra](infra) | Kubernetes manifests | |
+| [docker-compose.yml](docker-compose.yml) | Runs everything, including Postgres | |
+
+## Run everything
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The property page with full details is http://localhost:3000/imovel/3751584/apartamento-venda-vila-velha-es-praia-de-itaparica.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Develop
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Requires Node 22.12+ and pnpm.
 
-## Learn More
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up                 # Postgres only, in Docker
+pnpm --filter api build
+pnpm db:migrate
+pnpm dev                   # web, API and Studio with hot reload
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run `pnpm test`, `pnpm typecheck` and `pnpm lint` before pushing.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How data flows
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- **Content** (listings, neighborhoods, contact details, featured listings) lives in Sanity. The web app reads it only through the functions in [apps/web/src/content/index.ts](apps/web/src/content/index.ts), and edits appear on the site within a minute.
+- **Images** are served by Sanity's image CDN. A custom `next/image` loader ([sanity-image-loader.ts](apps/web/src/lib/sanity-image-loader.ts)) requests each size with `auto=format` (WebP for browsers that support it) and a quality of 60, 75 or 85.
+- **Leads** go from the contact form through a server action to `POST /leads` on the API, then into Postgres. The API is never exposed publicly and has no endpoint for reading leads.
 
-## Deploy on Vercel
+## Sanity
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Local development uses the `development` dataset of project `1ai1aq1e`; production will use `production`. The content was imported into `development` once. To fill another dataset, copy it:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+pnpm --filter studio exec sanity dataset copy development production
+```
+
+The Studio is hosted at https://alexnolasco.sanity.studio. Deploy changes to it with `pnpm --filter studio deploy`.
+
+A listing with **"Anúncio no site antigo"** filled in still opens on the current site. Clear that field once the listing has its photos and description in Sanity, and it gets its own page here.

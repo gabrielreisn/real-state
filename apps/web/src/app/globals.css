@@ -1,0 +1,77 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-navy: #0f1a3a;
+  --color-navy-soft: #1d2b55;
+  --color-on-navy: #c3cce0;
+  --color-gold: #e0ac69;
+  --color-brand: #990000;
+  --color-brand-dark: #7a0000;
+  --color-ink: #0f1a3a;
+  --color-slate: #4a5468;
+  --color-mist: #eef1f5;
+  --color-line: #d5dae3;
+  /* Darker than WhatsApp's brand green so the white icon keeps 3:1 contrast. */
+  --color-whatsapp: #0e7a3c;
+
+  --font-sans: var(--font-schibsted), Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 1.5rem;
+  }
+
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+  }
+
+  /* Dark sections set --focus to white so the ring stays visible. */
+  :focus-visible {
+    outline: 3px solid var(--focus, var(--color-brand));
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  /* An inline dropdown inside the search sentence. */
+  .choice {
+    appearance: none;
+    field-sizing: content;
+    max-width: 100%;
+    padding: 0 1.1em 0.05em 0;
+    border: 0;
+    border-bottom: 0.08em solid var(--color-gold);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-overflow: ellipsis;
+  }
+
+  .choice option,
+  .choice optgroup {
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 1rem;
+  }
+}
+
+@utility arrow-right {
+  clip-path: polygon(0 0, calc(100% - 2.5rem) 0, 100% 50%, calc(100% - 2.5rem) 100%, 0 100%);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

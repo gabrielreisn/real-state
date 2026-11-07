@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: real-state
+resources:
+  - ../../base
+images:
+  - { name: real-state/api, newTag: local }
+  - { name: real-state/web, newTag: local }
+  - { name: real-state/studio, newTag: local }
+configMapGenerator:
+  - name: real-state-config
+    literals:
+      - SITE_URL=http://real-state.localhost
+      - SANITY_PROJECT_ID=1ai1aq1e
+      - SANITY_DATASET=development
+# Development credentials only. Production creates this Secret out of band (see infra/README.md).
+secretGenerator:
+  - name: real-state-secrets
+    literals:
+      - POSTGRES_USER=realstate
+      - POSTGRES_PASSWORD=realstate
+      - POSTGRES_DB=realstate
+      - DATABASE_URL=postgres://realstate:realstate@postgres:5432/realstate

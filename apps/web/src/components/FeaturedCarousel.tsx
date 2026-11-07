@@ -1,0 +1,91 @@
+'use client';
+
+import Image from 'next/image';
+import { useRef, useState } from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import type { PropertySummary } from '@/content/types';
+import { formatPrice } from '@/lib/format';
+import { PropertyFacts } from './PropertyFacts';
+import { PropertyLink } from './PropertyLink';
+
+const stepButton = 'flex h-11 w-11 items-center justify-center rounded-full border border-navy/30 bg-white hover:border-navy';
+
+export function FeaturedCarousel({ properties }: { properties: PropertySummary[] }) {
+  const track = useRef<HTMLUListElement>(null);
+  const [active, setActive] = useState(0);
+
+  const goTo = (index: number) => {
+    const element = track.current;
+    if (!element) return;
+    element.scrollTo({ left: element.clientWidth * ((index + properties.length) % properties.length) });
+  };
+
+  return (
+    <section aria-labelledby="destaques-titulo" aria-roledescription="carrossel" className="bg-mist py-16 md:py-20">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <div className="flex items-end justify-between gap-4">
+          <h2 id="destaques-titulo" className="text-[2rem] leading-tight font-bold tracking-tight md:text-[2.5rem]">
+            Destaques
+          </h2>
+          <div className="flex items-center gap-2">
+            <p className="mr-2 text-slate tabular-nums" aria-live="polite">
+              {active + 1} de {properties.length}
+            </p>
+            <button type="button" aria-label="Destaque anterior" onClick={() => goTo(active - 1)} className={stepButton}>
+              <FaChevronLeft aria-hidden />
+            </button>
+            <button type="button" aria-label="Próximo destaque" onClick={() => goTo(active + 1)} className={stepButton}>
+              <FaChevronRight aria-hidden />
+            </button>
+          </div>
+        </div>
+
+        <ul
+          ref={track}
+          onScroll={(event) => {
+            const { scrollLeft, clientWidth } = event.currentTarget;
+            setActive(Math.round(scrollLeft / clientWidth));
+          }}
+          className="scrollbar-none relative mt-8 flex snap-x snap-mandatory overflow-x-auto scroll-smooth motion-reduce:scroll-auto"
+        >
+          {properties.map((property, index) => (
+            <li
+              key={property.id}
+              aria-roledescription="slide"
+              aria-label={`${index + 1} de ${properties.length}`}
+              className="w-full shrink-0 snap-start"
+            >
+              <article className="grid items-center gap-6 md:grid-cols-12 md:gap-12">
+                <div className="relative aspect-[3/2] overflow-hidden rounded-sm bg-white md:col-span-7">
+                  <Image
+                    src={property.image.src}
+                    alt={property.image.alt}
+                    fill
+                    sizes="(min-width: 768px) 700px, 100vw"
+                    placeholder={property.image.lqip ? 'blur' : 'empty'}
+                    blurDataURL={property.image.lqip}
+                    className="object-cover"
+                  />
+                </div>
+                <div className="md:col-span-5">
+                  <h3 className="text-2xl leading-tight font-bold tracking-tight md:text-[2rem]">
+                    {property.type} em {property.neighborhood}
+                  </h3>
+                  <p className="mt-1 text-slate">
+                    {property.city}, código {property.code}
+                  </p>
+                  <p className="mt-5 text-3xl font-bold text-brand">{formatPrice(property.price)}</p>
+                  <PropertyFacts property={property} className="mt-2" />
+                  {property.excerpt ? <p className="mt-5 line-clamp-3 max-w-prose text-slate">{property.excerpt}</p> : null}
+                  <PropertyLink href={property.href} className="mt-7 inline-block bg-navy px-6 py-3 font-semibold text-white hover:bg-navy-soft">
+                    Ver anúncio
+                  </PropertyLink>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}

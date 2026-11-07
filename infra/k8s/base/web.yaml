@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: web
+          image: real-state/web
+          ports:
+            - containerPort: 3000
+          env:
+            - name: API_INTERNAL_URL
+              value: http://api:4000
+            - name: SITE_URL
+              valueFrom:
+                configMapKeyRef: { name: real-state-config, key: SITE_URL }
+            - name: SANITY_PROJECT_ID
+              valueFrom:
+                configMapKeyRef: { name: real-state-config, key: SANITY_PROJECT_ID }
+            - name: SANITY_DATASET
+              valueFrom:
+                configMapKeyRef: { name: real-state-config, key: SANITY_DATASET }
+          livenessProbe:
+            httpGet: { path: /, port: 3000 }
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet: { path: /, port: 3000 }
+          resources:
+            requests: { cpu: 100m, memory: 192Mi }
+            limits: { memory: 512Mi }
