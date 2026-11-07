@@ -218,6 +218,17 @@ async function writeListings(listings: Listing[]) {
 
   const assets = await uploadPhotos(client, listings);
 
+  // Galleries the importer created carry its generated captions ("…, foto N"). Those may be
+  // completed when photos that failed to upload earlier are now available; galleries edited
+  // in Studio never match and are left alone.
+  const galleries = new Map(
+    (await client.fetch<{ _id: string; alts: string[] | null }[]>(`*[_type == "property"]{ _id, "alts": gallery[].alt }`)).map(
+      (doc) => [doc._id, doc.alts ?? []],
+    ),
+  );
+  const isImportedGallery = (alts: string[]) => alts.length > 0 && alts.every((caption) => /, foto \d+$/.test(caption ?? ''));
+  let completed = 0;
+
   let saved = 0;
   for (let start = 0; start < listings.length; start += 20) {
     const transaction = client.transaction();
@@ -271,10 +282,15 @@ async function writeListings(listings: Listing[]) {
         }).filter(([, value]) => value !== undefined),
       );
 
+      const existingAlts = galleries.get(id) ?? [];
+      const completeGallery = isImportedGallery(existingAlts) && existingAlts.length < photos.length;
+      if (completeGallery) completed++;
+
       transaction.createIfNotExists({ _id: id, _type: 'property', code: listing.code });
       transaction.patch(id, (patch) => {
-        let next = patch.set(facts).setIfMissing(content).unset(['externalUrl']);
-        if (listing.price === null) next = next.unset(['price']);
+        // One unset call: a second unset() replaces the first instead of adding to it.
+        let next = patch.set(facts).setIfMissing(content).unset(listing.price === null ? ['externalUrl', 'price'] : ['externalUrl']);
+        if (completeGallery) next = next.set({ gallery: content.gallery });
         return next;
       });
     }
@@ -282,6 +298,7 @@ async function writeListings(listings: Listing[]) {
     saved += Math.min(20, listings.length - start);
     console.log(`  ${saved}/${listings.length} listings saved`);
   }
+  if (completed) console.log(`Completed ${completed} galleries with photos that failed on an earlier run.`);
   console.log('Done.');
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { Fragment } from 'react';
 import type { IconType } from 'react-icons';
 import { FaArrowsLeftRight, FaBath, FaBed, FaCar, FaCheck, FaChevronRight, FaShower } from 'react-icons/fa6';
@@ -22,7 +22,9 @@ export const generateStaticParams = getPropertyDetailParams;
 async function loadProperty(params: Params) {
   const { id, slug } = await params;
   const property = await getPropertyDetail(id);
-  if (!property || property.slug !== slug) notFound();
+  if (!property) notFound();
+  // Old links can carry an outdated slug; send them to the listing's current address.
+  if (property.slug !== slug) permanentRedirect(property.href);
   return property;
 }
 
