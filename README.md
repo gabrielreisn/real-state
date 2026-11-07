@@ -47,6 +47,18 @@ Local development uses the `development` dataset of project `1ai1aq1e`; producti
 pnpm --filter studio exec sanity dataset copy development production
 ```
 
+### Importing listings from the current site
+
+The listings on www.alexnolasco.com.br (ImobiBrasil) can be imported into Sanity. This needs an Editor token in `.env` as `SANITY_API_WRITE_TOKEN`.
+
+```bash
+pnpm --filter studio import:crawl          # download every public listing page (1 per second)
+pnpm --filter studio import                # dry run: report what would be imported and what looks wrong
+pnpm --filter studio import -- --write     # import into "development" (add --dataset to target another)
+```
+
+Re-running is safe. Prices, rooms, areas and fees are refreshed from the old site; photos, descriptions and features are only filled in where missing, so edits made in Studio are kept. Downloaded pages and the photo upload log are cached in `apps/studio/import/.cache` (gitignored); delete the `pages` folder there to fetch fresh pages.
+
 The Studio is hosted at https://alexnolasco.sanity.studio. Deploy changes to it with `pnpm --filter studio deploy`.
 
 A listing with **"Anúncio no site antigo"** filled in still opens on the current site. Clear that field once the listing has its photos and description in Sanity, and it gets its own page here.

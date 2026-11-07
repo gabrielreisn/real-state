@@ -80,9 +80,12 @@ export const property = defineType({
     defineField({ name: 'address', title: 'Endereço', type: 'string', group: 'main' }),
     defineField({ name: 'condominium', title: 'Condomínio', type: 'string', group: 'main' }),
     defineField({ name: 'inCondominium', title: 'Em condomínio', type: 'boolean', group: 'main' }),
+    defineField({ name: 'condoFee', title: 'Condomínio (R$/mês)', type: 'number', group: 'main', validation: (r) => r.min(0) }),
+    defineField({ name: 'iptu', title: 'IPTU (R$)', type: 'number', group: 'main', validation: (r) => r.min(0) }),
 
     defineField({ name: 'area', title: 'Área útil (m²)', type: 'number', group: 'specs', validation: (r) => r.min(0) }),
     defineField({ name: 'builtArea', title: 'Área construída (m²)', type: 'number', group: 'specs', validation: (r) => r.min(0) }),
+    defineField({ name: 'landArea', title: 'Área do terreno (m²)', type: 'number', group: 'specs', validation: (r) => r.min(0) }),
     count('bedrooms', 'Dormitórios'),
     count('suites', 'Suítes'),
     count('bathrooms', 'Banheiros'),
@@ -109,6 +112,13 @@ export const property = defineType({
       type: 'object',
       group: 'content',
       fields: [
+        defineField({
+          name: 'body',
+          title: 'Texto',
+          description: 'Descrição livre, um parágrafo por linha. Os campos abaixo são opcionais e estruturam a página quando preenchidos.',
+          type: 'text',
+          rows: 12,
+        }),
         defineField({ name: 'headline', title: 'Chamada', type: 'string' }),
         defineField({ name: 'intro', title: 'Introdução', type: 'text', rows: 2 }),
         defineField({ name: 'highlights', title: 'Destaques do imóvel', type: 'array', of: [defineArrayMember({ type: 'string' })] }),

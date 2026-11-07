@@ -5,7 +5,9 @@
     "dev": "sanity dev --port 3333",
     "build": "sanity build dist --yes",
     "typecheck": "tsc --noEmit",
-    "deploy": "sanity deploy"
+    "deploy": "sanity deploy",
+    "import:crawl": "node import/crawl.ts",
+    "import": "node import/run.ts"
   },
   "dependencies": {
     "@sanity/vision": "^6.22.0",
@@ -15,7 +17,9 @@
     "styled-components": "^6.6.0"
   },
   "devDependencies": {
+    "@sanity/client": "^8.15.0",
     "@types/react": "^19.3.0",
+    "cheerio": "^1.2.0",
     "typescript": "6.0.3"
   }
 }

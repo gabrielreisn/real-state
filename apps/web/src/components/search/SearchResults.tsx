@@ -1,12 +1,14 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { FaXmark } from 'react-icons/fa6';
 import { whatsappLink } from '@/content/site';
 import { filterChips, SORT_ORDERS, type SortOrder } from '@/lib/filters';
 import { plural } from '@/lib/format';
 import { PropertyCard } from '../PropertyCard';
 import { RESULTS_HEADING_ID, useSearch } from './SearchProvider';
+
+const PAGE_SIZE = 12;
 
 export function SearchResults({ whatsapp }: { whatsapp: string }) {
   const {
@@ -18,6 +20,12 @@ export function SearchResults({ whatsapp }: { whatsapp: string }) {
   const chips = filterChips(filters);
   const count = results.length;
   const countLabel = `${count} ${plural(count, 'imóvel', 'imóveis')}`;
+
+  // Shows results a page at a time; any change to the search starts again from the first page.
+  const searchKey = JSON.stringify([filters, sort]);
+  const [paging, setPaging] = useState({ key: searchKey, limit: PAGE_SIZE });
+  const limit = paging.key === searchKey ? paging.limit : PAGE_SIZE;
+  const remaining = count - limit;
 
   return (
     <section id="imoveis" aria-labelledby={RESULTS_HEADING_ID} className="py-16 md:py-20">
@@ -74,13 +82,28 @@ export function SearchResults({ whatsapp }: { whatsapp: string }) {
 
         {count > 0 ? (
           <ul className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((property) => (
+            {results.slice(0, limit).map((property) => (
               <li key={property.id}>
                 <PropertyCard property={property} />
               </li>
             ))}
           </ul>
-        ) : (
+        ) : null}
+        {count > 0 && remaining > 0 ? (
+          <div className="mt-12 flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPaging({ key: searchKey, limit: limit + PAGE_SIZE })}
+              className="border border-navy px-6 py-3 font-semibold hover:bg-navy hover:text-white"
+            >
+              Mostrar mais imóveis
+            </button>
+            <p className="text-sm text-slate" aria-live="polite">
+              Mostrando {limit} de {count}
+            </p>
+          </div>
+        ) : null}
+        {count === 0 ? (
           <div className="mt-10 max-w-2xl border-l-4 border-brand bg-mist p-6 md:p-8">
             <p className="text-xl font-semibold">Nenhum imóvel com essa combinação.</p>
             <p className="mt-2 text-slate">
@@ -95,7 +118,7 @@ export function SearchResults({ whatsapp }: { whatsapp: string }) {
               Pedir pelo WhatsApp
             </a>
           </div>
-        )}
+        ) : null}
       </div>
     </section>
   );

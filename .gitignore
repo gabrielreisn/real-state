@@ -11,3 +11,6 @@ coverage/
 .env.*
 !.env.example
 *.local.yaml
+
+# Importer caches (downloaded pages and photos)
+apps/studio/import/.cache/

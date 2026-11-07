@@ -29,11 +29,16 @@ export type PropertyDetail = PropertySummary & {
   summary: string;
   address: string;
   condominium: string;
-  builtArea: number;
-  livingRooms: number;
-  inCondominium: boolean;
+  builtArea?: number;
+  landArea?: number;
+  livingRooms?: number;
+  inCondominium?: boolean;
+  condoFee?: number;
+  iptu?: number;
   gallery: Image[];
   description: {
+    /** Free text, one paragraph per blank line. Imported listings only have this. */
+    body: string;
     headline: string;
     intro: string;
     highlights: string[];

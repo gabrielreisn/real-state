@@ -1,6 +1,6 @@
 'use client';
 
-import type { MouseEvent } from 'react';
+import { type MouseEvent, useState } from 'react';
 import type { Neighborhood } from '@/content/types';
 import { plural } from '@/lib/format';
 import { useSearch } from './SearchProvider';
@@ -11,6 +11,8 @@ export function NeighborhoodLinks({ neighborhoods }: { neighborhoods: Neighborho
     state: { filters },
     actions,
   } = useSearch();
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? neighborhoods : neighborhoods.slice(0, 12);
 
   const select = (event: MouseEvent, neighborhood: Neighborhood) => {
     event.preventDefault();
@@ -26,7 +28,7 @@ export function NeighborhoodLinks({ neighborhoods }: { neighborhoods: Neighborho
         </h2>
         <p className="mt-2 max-w-xl text-lg text-slate">Escolha um bairro para ver os imóveis à venda nele.</p>
         <ul className="mt-8 grid border-t border-line sm:grid-cols-2 sm:gap-x-8 lg:grid-cols-4">
-          {neighborhoods.map((neighborhood) => {
+          {visible.map((neighborhood) => {
             const current = filters.cidade === neighborhood.city && filters.bairro === neighborhood.name;
             return (
               <li key={neighborhood.slug} className="border-b border-line">
@@ -48,6 +50,16 @@ export function NeighborhoodLinks({ neighborhoods }: { neighborhoods: Neighborho
             );
           })}
         </ul>
+        {neighborhoods.length > 12 ? (
+          <button
+            type="button"
+            aria-expanded={showAll}
+            onClick={() => setShowAll((value) => !value)}
+            className="mt-8 font-semibold underline underline-offset-4 hover:text-brand"
+          >
+            {showAll ? 'Mostrar menos bairros' : `Ver todos os ${neighborhoods.length} bairros`}
+          </button>
+        ) : null}
       </div>
     </section>
   );

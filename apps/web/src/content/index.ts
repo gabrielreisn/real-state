@@ -19,7 +19,7 @@ const SUMMARY_FIELDS = /* groq */ `
   type,
   purpose,
   price,
-  area,
+  "area": coalesce(area, landArea),
   bedrooms,
   suites,
   bathrooms,
@@ -126,8 +126,12 @@ type RawDetail = RawSummary & {
   address: string | null;
   condominium: string | null;
   builtArea: number | null;
+  landArea: number | null;
   livingRooms: number | null;
   inCondominium: boolean | null;
+  condoFee: number | null;
+  iptu: number | null;
+  rawArea: number | null;
   gallery: SanityImage[] | null;
   description: Partial<Record<keyof PropertyDetail['description'], string | string[] | null>> | null;
   features: FeatureGroup[] | null;
@@ -143,12 +147,20 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
       address,
       condominium,
       builtArea,
+      landArea,
       livingRooms,
       inCondominium,
+      condoFee,
+      iptu,
+      "rawArea": area,
       "gallery": gallery[] ${IMAGE_PROJECTION},
       description,
       "features": featureGroups[] { title, "items": coalesce(items, []) },
-      "similar": similar[]->{ ${SUMMARY_FIELDS} }
+      // Hand-picked when set; otherwise other listings in the same neighborhood.
+      "similar": select(
+        count(similar) > 0 => similar[]->{ ${SUMMARY_FIELDS} },
+        *[${LISTED} && neighborhood._ref == ^.neighborhood._ref && _id != ^._id] | order(code desc) [0...3] { ${SUMMARY_FIELDS} }
+      )
     }`,
     { id },
   );
@@ -166,11 +178,17 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
     summary: raw.summary ?? '',
     address: raw.address ?? '',
     condominium: raw.condominium ?? '',
-    builtArea: raw.builtArea ?? summary.area ?? 0,
-    livingRooms: raw.livingRooms ?? 0,
-    inCondominium: raw.inCondominium ?? false,
+    // The summary's area falls back to the land area; the detail page shows them separately.
+    area: optional(raw.rawArea),
+    builtArea: optional(raw.builtArea),
+    landArea: optional(raw.landArea),
+    livingRooms: optional(raw.livingRooms),
+    inCondominium: optional(raw.inCondominium),
+    condoFee: optional(raw.condoFee),
+    iptu: optional(raw.iptu),
     gallery: gallery.length > 0 ? gallery : [summary.image],
     description: {
+      body: text(description.body),
       headline: text(description.headline),
       intro: text(description.intro),
       highlights: list(description.highlights),

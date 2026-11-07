@@ -96,6 +96,32 @@ export default async function PropertyPage({ params }: { params: Params }) {
   const baseUrl = SITE_URL;
   const { description } = property;
   const wholePrice = formatPrice(property.price);
+  const currency = (value: number) => formatPrice(value);
+  const stats = [
+    property.bedrooms !== undefined && { icon: FaBed, value: property.bedrooms, label: 'Dormitórios' },
+    property.suites !== undefined && { icon: FaBath, value: property.suites, label: 'Suítes' },
+    property.bathrooms !== undefined && { icon: FaShower, value: property.bathrooms, label: 'Banheiros' },
+    property.parking !== undefined && { icon: FaCar, value: property.parking, label: 'Vagas' },
+    property.area !== undefined && { icon: FaArrowsLeftRight, value: `${property.area} m²`, label: 'Área Privativa' },
+    property.area === undefined &&
+      property.landArea !== undefined && { icon: FaArrowsLeftRight, value: `${property.landArea} m²`, label: 'Terreno' },
+  ].filter((stat) => stat !== false);
+  const facts: [string, string | number | undefined][] = [
+    ['Código', property.code],
+    ['Endereço', property.address || undefined],
+    ['Bairro', property.neighborhood],
+    ['Condomínio', property.condominium || undefined],
+    ['Condomínio (mensal)', property.condoFee !== undefined ? currency(property.condoFee) : undefined],
+    ['IPTU', property.iptu !== undefined ? currency(property.iptu) : undefined],
+    ['Área Útil', property.area !== undefined ? `${property.area} m²` : undefined],
+    ['Área Construída', property.builtArea ? `${property.builtArea} m²` : undefined],
+    ['Área do Terreno', property.landArea !== undefined ? `${property.landArea} m²` : undefined],
+    ['Em Condomínio', property.inCondominium === undefined ? undefined : property.inCondominium ? 'Sim' : 'Não'],
+    ['Sala', property.livingRooms || undefined],
+  ];
+  // Hand-written listings use the structured fields; imported ones have free text in `body`.
+  const structured = Boolean(description.headline || description.highlights.length || description.whyText);
+  const bodyParagraphs = description.body.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);
 
   const breadcrumbs = [
     { label: 'Inicial', href: '/' },
@@ -127,11 +153,9 @@ export default async function PropertyPage({ params }: { params: Params }) {
             {formatPrice(property.price)}
           </p>
           <ul className="flex flex-wrap gap-x-7 gap-y-3 px-4 py-4 md:px-8 xl:px-6">
-            <Stat icon={FaBed} value={property.bedrooms!} label="Dormitórios" />
-            <Stat icon={FaBath} value={property.suites!} label="Suítes" />
-            <Stat icon={FaShower} value={property.bathrooms!} label="Banheiros" />
-            <Stat icon={FaCar} value={property.parking!} label="Vagas" />
-            <Stat icon={FaArrowsLeftRight} value={`${property.area} m²`} label="Área Privativa" />
+            {stats.map((stat) => (
+              <Stat key={stat.label} icon={stat.icon} value={stat.value} label={stat.label} />
+            ))}
           </ul>
         </div>
       </div>
@@ -165,31 +189,54 @@ export default async function PropertyPage({ params }: { params: Params }) {
               <h2 id="descricao-titulo" className="border-b-2 border-brand pb-2 text-2xl font-bold">
                 Descrição do Imóvel
               </h2>
-              <p className="mt-4 text-lg font-medium">{description.headline}</p>
-              <p className="mt-2">{description.intro}</p>
+              {structured ? (
+                <>
+                  {description.headline ? <p className="mt-4 text-lg font-medium">{description.headline}</p> : null}
+                  {description.intro ? <p className="mt-2">{description.intro}</p> : null}
+                  {description.highlights.length > 0 ? (
+                    <>
+                      <h3 className="mt-7 text-xl font-bold">Destaques do Imóvel</h3>
+                      <CheckList items={description.highlights} />
+                    </>
+                  ) : null}
+                  {description.condominiumItems.length > 0 ? (
+                    <>
+                      <h3 className="mt-7 text-xl font-bold">{description.condominiumTitle || 'Condomínio'}</h3>
+                      <CheckList items={description.condominiumItems} />
+                    </>
+                  ) : null}
+                  {description.whyText ? (
+                    <>
+                      {description.whyTitle ? <h3 className="mt-7 text-xl font-bold">{description.whyTitle}</h3> : null}
+                      <p className="mt-3">{description.whyText}</p>
+                    </>
+                  ) : null}
+                  {description.closing.map((paragraph) => (
+                    <p key={paragraph} className="mt-4">
+                      {paragraph}
+                    </p>
+                  ))}
+                </>
+              ) : (
+                <div className="mt-4 max-w-prose space-y-4">
+                  {bodyParagraphs.map((paragraph, index) => (
+                    <p key={index} className="whitespace-pre-line">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              )}
 
-              <h3 className="mt-7 text-xl font-bold">Destaques do Imóvel</h3>
-              <CheckList items={description.highlights} />
-
-              <h3 className="mt-7 text-xl font-bold">{description.condominiumTitle}</h3>
-              <CheckList items={description.condominiumItems} />
-
-              <h3 className="mt-7 text-xl font-bold">{description.whyTitle}</h3>
-              <p className="mt-3">{description.whyText}</p>
-
-              {description.closing.map((paragraph) => (
-                <p key={paragraph} className="mt-4">
-                  {paragraph}
-                </p>
-              ))}
-
-              <div className="mt-6 space-y-2 border-l-2 border-line pl-4 text-sm text-slate">
-                {description.disclaimers.map((disclaimer) => (
-                  <p key={disclaimer}>{disclaimer}</p>
-                ))}
-              </div>
+              {description.disclaimers.length > 0 ? (
+                <div className="mt-6 space-y-2 border-l-2 border-line pl-4 text-sm text-slate">
+                  {description.disclaimers.map((disclaimer) => (
+                    <p key={disclaimer}>{disclaimer}</p>
+                  ))}
+                </div>
+              ) : null}
             </section>
 
+            {property.features.length > 0 ? (
             <section aria-labelledby="caracteristicas-titulo">
               <h2 id="caracteristicas-titulo" className="border-b-2 border-brand pb-2 text-2xl font-bold">
                 Características
@@ -207,6 +254,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
                 ))}
               </div>
             </section>
+            ) : null}
           </div>
 
           <aside className="space-y-6 lg:sticky lg:top-4 lg:self-start">
@@ -219,14 +267,13 @@ export default async function PropertyPage({ params }: { params: Params }) {
 
             <section aria-label="Ficha do imóvel" className="border border-line p-5">
               <dl className="text-sm">
-                <FactRow label="Código">{property.code}</FactRow>
-                <FactRow label="Endereço">{property.address}</FactRow>
-                <FactRow label="Bairro">{property.neighborhood}</FactRow>
-                <FactRow label="Condomínio">{property.condominium}</FactRow>
-                <FactRow label="Área Útil">{property.area} m²</FactRow>
-                <FactRow label="Área Construída">{property.builtArea} m²</FactRow>
-                <FactRow label="Em Condomínio">{property.inCondominium ? 'Sim' : 'Não'}</FactRow>
-                <FactRow label="Sala">{property.livingRooms}</FactRow>
+                {facts
+                  .filter(([, value]) => value !== undefined)
+                  .map(([label, value]) => (
+                    <FactRow key={label} label={label}>
+                      {value}
+                    </FactRow>
+                  ))}
               </dl>
               <p className="mt-4 mb-2 text-sm font-medium">Compartilhar:</p>
               <ShareButtons
@@ -262,6 +309,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
         </div>
       </div>
 
+      {property.similar.length > 0 ? (
       <section aria-labelledby="similares-titulo" className="bg-mist py-12">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <h2 id="similares-titulo" className="text-2xl font-bold">
@@ -295,6 +343,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
           </ul>
         </div>
       </section>
+      ) : null}
 
     </>
   );
