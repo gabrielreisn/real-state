@@ -10,7 +10,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile --filter web
 COPY apps/web apps/web
-RUN pnpm --filter web exec next build
+RUN pnpm --filter web build
 
 FROM node:26-alpine
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
