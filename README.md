@@ -20,7 +20,7 @@ The property page with full details is http://localhost:3000/imovel/3751584/apar
 
 ## Develop
 
-Requires Node 22.12+ and pnpm.
+Requires Node 26 and pnpm 12.
 
 ```bash
 pnpm install
