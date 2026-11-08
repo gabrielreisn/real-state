@@ -41,7 +41,7 @@ export function listingsHref(filters: PropertyFilters, sort: SortOrder = DEFAULT
  * Turns path segments back into a city and neighborhood, matching the names that listings use.
  * Returns null when the path names a place with no listings, so the page can 404.
  */
-export function resolveLocation(segments: string[], properties: PropertySummary[]): Pick<PropertyFilters, 'cidade' | 'bairro'> | null {
+export function resolveLocation(segments: string[], properties: Pick<PropertySummary, 'city' | 'neighborhood'>[]): Pick<PropertyFilters, 'cidade' | 'bairro'> | null {
   if (segments.length === 0) return {};
   if (segments.length > 2) return null;
   const [citySlug, neighborhoodSlug] = segments;

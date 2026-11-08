@@ -9,6 +9,8 @@ const listing = (fields: Fixture): PropertySummary => ({
   purpose: 'Venda',
   state: 'ES',
   image: { src: `https://cdn.sanity.io/images/test/test/${fields.code}-800x600.jpg`, alt: '' },
+  photos: [{ src: `https://cdn.sanity.io/images/test/test/${fields.code}-800x600.jpg`, alt: '' }],
+  photoCount: 1,
   excerpt: '',
   href: `/imovel/${fields.code}/imovel-${fields.code}`,
   ...fields,

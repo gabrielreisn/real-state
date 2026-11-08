@@ -8,7 +8,7 @@ import { CodeLookup } from '@/components/search/CodeLookup';
 import { SearchSentence } from '@/components/search/SearchSentence';
 import { JsonLd } from '@/components/JsonLd';
 import { getFeaturedProperties, getNeighborhoods, getProperties, SITE_URL } from '@/content';
-import { hasActiveFilters, parseFilters, parseSort } from '@/lib/filters';
+import { hasActiveFilters, parseFilters, parseSort, searchable } from '@/lib/filters';
 import { LISTINGS_PATH, listingsHref } from '@/lib/listings-url';
 import { homeGraph } from '@/lib/seo/jsonld';
 import { openGraphDefaults } from '@/lib/seo/metadata';
@@ -43,7 +43,7 @@ export default async function HomePage({
           <h1 id="busca-titulo" className="mb-5 text-lg font-medium text-on-navy md:text-xl">
             Imóveis à venda na Grande Vitória
           </h1>
-          <SearchSentence properties={properties} />
+          <SearchSentence properties={properties.map(searchable)} />
           <CodeLookup listings={properties.map(({ code, href }) => ({ code, href }))} />
         </div>
       </section>

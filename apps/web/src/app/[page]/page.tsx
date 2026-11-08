@@ -43,7 +43,7 @@ export default async function InformationPage({ params }: { params: Params }) {
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-12 md:px-8 md:py-16 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <PageBody value={page.body} />
         {page.form === 'propertySubmission' ? (
-          <aside aria-labelledby="formulario-titulo" className="self-start border border-line bg-mist p-6 lg:sticky lg:top-4">
+          <aside aria-labelledby="formulario-titulo" className="self-start border border-line bg-mist p-6 lg:sticky lg:top-[calc(var(--header-offset)+1rem)]">
             <h2 id="formulario-titulo" className="mb-5 text-2xl font-bold">
               {page.formTitle ?? 'Informações sobre o imóvel'}
             </h2>

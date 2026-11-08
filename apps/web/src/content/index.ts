@@ -3,7 +3,7 @@
 import { cache } from 'react';
 import { sanityFetch } from '@/lib/sanity/client';
 import { IMAGE_PROJECTION, type SanityImage, toImage } from '@/lib/sanity/image';
-import type { FeatureGroup, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
+import type { FeatureGroup, Image, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
 
 export { legacy, phoneLink, whatsappLink } from './site';
 export type * from './types';
@@ -11,6 +11,11 @@ export type * from './types';
 export const SITE_URL = process.env.SITE_URL ?? 'https://www.alexnolasco.com.br';
 
 const LISTED = /* groq */ `_type == "property" && defined(slug.current) && defined(coverImage.asset) && defined(neighborhood)`;
+
+/** Photos in each card's carousel. The rest are on the listing page. */
+export const CARD_PHOTOS = 5;
+// Card photos after the cover load on interaction, so they skip the blur placeholder.
+const LIGHT_IMAGE_PROJECTION = /* groq */ `{ alt, crop, hotspot, asset->{ _id } }`;
 
 const SUMMARY_FIELDS = /* groq */ `
   "id": coalesce(legacyId, code),
@@ -29,7 +34,9 @@ const SUMMARY_FIELDS = /* groq */ `
   "city": neighborhood->city,
   "neighborhood": neighborhood->name,
   "state": neighborhood->state,
-  "image": coverImage ${IMAGE_PROJECTION}
+  "image": coverImage ${IMAGE_PROJECTION},
+  "photos": gallery[0...${CARD_PHOTOS + 1}] ${LIGHT_IMAGE_PROJECTION},
+  "photoCount": count(gallery)
 `;
 
 type RawSummary = {
@@ -50,11 +57,22 @@ type RawSummary = {
   neighborhood: string;
   state: string | null;
   image: SanityImage;
+  photos: SanityImage[] | null;
+  photoCount: number | null;
 };
 
 const optional = <T,>(value: T | null | undefined) => value ?? undefined;
 
+const withoutParams = (src: string) => src.split('?')[0];
+
 function toSummary(raw: RawSummary): PropertySummary {
+  const cover = toImage(raw.image)!;
+  // Imported galleries start with the cover, and a few repeat a photo; each shows once.
+  const photos: Image[] = [];
+  for (const photo of [cover, ...(raw.photos ?? []).map(toImage)]) {
+    const duplicate = photos.some((kept) => withoutParams(kept.src) === withoutParams(photo?.src ?? ''));
+    if (photo && !duplicate && photos.length < CARD_PHOTOS) photos.push(photo);
+  }
   return {
     id: raw.id,
     code: raw.code,
@@ -70,7 +88,9 @@ function toSummary(raw: RawSummary): PropertySummary {
     suites: optional(raw.suites),
     bathrooms: optional(raw.bathrooms),
     parking: optional(raw.parking),
-    image: toImage(raw.image)!,
+    image: cover,
+    photos,
+    photoCount: Math.max(raw.photoCount ?? 0, photos.length),
     excerpt: raw.excerpt ?? '',
     // Listings that are not complete here yet keep pointing at their page on the live site.
     href: raw.externalUrl ?? `/imovel/${raw.id}/${raw.slug}`,

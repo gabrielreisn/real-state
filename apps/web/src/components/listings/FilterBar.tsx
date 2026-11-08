@@ -27,7 +27,8 @@ function Control({ label, children }: { label: string; children: (id: string) =>
 }
 
 const pill =
-  'appearance-none rounded-full border border-navy/25 bg-white bg-[length:0.7rem] bg-[right_0.9rem_center] bg-no-repeat py-2 pr-9 pl-4 font-medium hover:border-navy aria-[current=true]:border-navy aria-[current=true]:bg-mist';
+  // field-sizing fits each pill to its chosen value instead of its longest option.
+  'max-w-72 appearance-none rounded-full border border-navy/25 bg-white bg-[length:0.7rem] bg-[right_0.9rem_center] bg-no-repeat py-2 pr-9 pl-4 font-medium text-ellipsis transition-colors duration-150 [field-sizing:content] hover:border-navy aria-[current=true]:border-navy aria-[current=true]:bg-mist';
 // A small chevron drawn in CSS so the native select keeps its accessibility.
 const chevron = {
   backgroundImage:
@@ -50,7 +51,7 @@ export function FilterBar({ options, filters, sort }: { options: SearchOptions; 
 
   return (
     <form action={LISTINGS_PATH} method="get" onSubmit={(event) => event.preventDefault()} aria-busy={pending}>
-      <div className="scrollbar-none -mx-4 flex items-center gap-2 overflow-x-auto px-4 py-3 md:mx-0 md:flex-wrap md:px-0">
+      <div className="scrollbar-none -mx-4 flex items-center gap-2 overflow-x-auto px-4 py-3 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
         <Control label="Cidade ou bairro">
           {(id) => (
             <select

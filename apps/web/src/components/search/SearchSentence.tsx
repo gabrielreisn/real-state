@@ -3,8 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { type FormEvent, type ReactNode, useId, useMemo, useState } from 'react';
 import { FaChevronDown } from 'react-icons/fa6';
-import type { PropertySummary } from '@/content/types';
-import { bedroomsLabel, filterProperties, locationValue, parseLocation, type PropertyFilters, searchOptions } from '@/lib/filters';
+import { bedroomsLabel, filterProperties, locationValue, parseLocation, type PropertyFilters, type Searchable, searchOptions } from '@/lib/filters';
 import { formatPriceShort, plural } from '@/lib/format';
 import { LISTINGS_PATH, listingsHref } from '@/lib/listings-url';
 
@@ -40,7 +39,7 @@ function Choice({
  * shows the live count and opens the listings page with those filters. Without JavaScript
  * it is a plain GET form to the same page.
  */
-export function SearchSentence({ properties }: { properties: PropertySummary[] }) {
+export function SearchSentence({ properties }: { properties: Searchable[] }) {
   const router = useRouter();
   const [filters, setFilters] = useState<PropertyFilters>({});
   const options = useMemo(() => searchOptions(properties), [properties]);

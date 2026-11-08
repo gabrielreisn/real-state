@@ -18,9 +18,14 @@
 }
 
 @layer base {
+  :root {
+    /* Height of the sticky header; other sticky bars and anchor jumps sit below it. */
+    --header-offset: 5rem;
+  }
+
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 1.5rem;
+    scroll-padding-top: calc(var(--header-offset) + 1.5rem);
   }
 
   body {
@@ -62,6 +67,36 @@
     background: #fff;
     color: var(--color-ink);
     font-size: 1rem;
+  }
+}
+
+/* Cards rise in gently as they scroll into view; cards already on screen show as they are. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+
+@utility animate-fade-in {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fade-in 0.4s ease-out;
   }
 }
 

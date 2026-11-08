@@ -27,6 +27,19 @@ export const DEFAULT_SORT: SortOrder = 'recentes';
 const PRICE_CEILINGS = [500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000, 5_000_000];
 const BEDROOM_MINIMUMS = [1, 2, 3, 4];
 
+/** The fields searching and sorting read. The home page sends only these to the browser. */
+export type Searchable = Pick<PropertySummary, 'code' | 'type' | 'city' | 'neighborhood' | 'price' | 'bedrooms' | 'area'>;
+
+export const searchable = ({ code, type, city, neighborhood, price, bedrooms, area }: Searchable): Searchable => ({
+  code,
+  type,
+  city,
+  neighborhood,
+  price,
+  bedrooms,
+  area,
+});
+
 type RawParams = Record<string, string | string[] | undefined>;
 
 const text = (value: string | string[] | undefined) => {
@@ -89,7 +102,7 @@ export function filtersToSearch(filters: PropertyFilters, sort: SortOrder) {
   return params.toString();
 }
 
-export function filterProperties(properties: PropertySummary[], filters: PropertyFilters) {
+export function filterProperties<T extends Searchable>(properties: T[], filters: PropertyFilters) {
   return properties.filter((property) => {
     if (filters.codigo && property.code !== filters.codigo) return false;
     if (filters.tipo && property.type !== filters.tipo) return false;
@@ -117,7 +130,7 @@ const ascending = (a: number | null | undefined, b: number | null | undefined) =
 const descending = (a: number | null | undefined, b: number | null | undefined) =>
   (b ?? Number.NEGATIVE_INFINITY) - (a ?? Number.NEGATIVE_INFINITY);
 
-export function sortProperties(properties: PropertySummary[], sort: SortOrder) {
+export function sortProperties<T extends Searchable>(properties: T[], sort: SortOrder) {
   switch (sort) {
     case 'menor-preco':
       return properties.toSorted((a, b) => ascending(a.price, b.price));
@@ -139,7 +152,7 @@ export type SearchOptions = {
 };
 
 /** Only offers choices that match at least one listing, so no option leads to an empty page. */
-export function searchOptions(properties: PropertySummary[]): SearchOptions {
+export function searchOptions(properties: Searchable[]): SearchOptions {
   const byName = (a: string, b: string) => a.localeCompare(b, 'pt-BR');
   const types = new Set<string>();
   const cities = new Map<string, Set<string>>();

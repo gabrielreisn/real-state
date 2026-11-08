@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRef, useState } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import type { PropertySummary } from '@/content/types';
 import { formatPrice } from '@/lib/format';
 import { PropertyFacts } from './PropertyFacts';
@@ -55,7 +55,8 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
               aria-label={`${index + 1} de ${properties.length}`}
               className="w-full shrink-0 snap-start"
             >
-              <article className="grid items-center gap-6 md:grid-cols-12 md:gap-12">
+              {/* One link covers the whole slide, so the photo and every line of text open the listing. */}
+              <article className="group relative grid items-center gap-6 rounded-sm md:grid-cols-12 md:gap-12 has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-brand">
                 <div className="relative aspect-[3/2] overflow-hidden rounded-sm bg-white md:col-span-7">
                   <Image
                     src={property.image.src}
@@ -64,12 +65,14 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
                     sizes="(min-width: 768px) 700px, 100vw"
                     placeholder={property.image.lqip ? 'blur' : 'empty'}
                     blurDataURL={property.image.lqip}
-                    className="object-cover"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
                   />
                 </div>
                 <div className="md:col-span-5">
-                  <h3 className="text-2xl leading-tight font-bold tracking-tight md:text-[2rem]">
-                    {property.type} em {property.neighborhood}
+                  <h3 className="text-2xl leading-tight font-bold tracking-tight transition-colors duration-200 group-hover:text-brand md:text-[2rem]">
+                    <PropertyLink href={property.href} className="after:absolute after:inset-0 focus-visible:outline-none">
+                      {property.type} em {property.neighborhood}
+                    </PropertyLink>
                   </h3>
                   <p className="mt-1 text-slate">
                     {property.city}, código {property.code}
@@ -77,9 +80,14 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
                   <p className="mt-5 text-3xl font-bold text-brand">{formatPrice(property.price)}</p>
                   <PropertyFacts property={property} className="mt-2" />
                   {property.excerpt ? <p className="mt-5 line-clamp-3 max-w-prose text-slate">{property.excerpt}</p> : null}
-                  <PropertyLink href={property.href} className="mt-7 inline-block bg-navy px-6 py-3 font-semibold text-white hover:bg-navy-soft">
+                  {/* Looks like a button; the slide's link already takes the click and the focus. */}
+                  <span
+                    aria-hidden
+                    className="mt-7 inline-flex items-center gap-2 bg-navy px-6 py-3 font-semibold text-white transition-colors duration-200 group-hover:bg-navy-soft"
+                  >
                     Ver anúncio
-                  </PropertyLink>
+                    <FaArrowRight className="text-sm transition-transform duration-200 ease-out group-hover:translate-x-1 motion-reduce:transition-none" />
+                  </span>
                 </div>
               </article>
             </li>

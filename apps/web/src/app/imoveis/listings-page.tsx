@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { FaXmark } from 'react-icons/fa6';
 import { FilterBar } from '@/components/listings/FilterBar';
 import { Pagination } from '@/components/listings/Pagination';
+import { StickyFilters } from '@/components/listings/StickyFilters';
 import { PropertyCard } from '@/components/PropertyCard';
 import { JsonLd } from '@/components/JsonLd';
 import { getProperties, getSiteSettings, SITE_URL, whatsappLink } from '@/content';
@@ -106,11 +107,11 @@ export async function ListingsPage(props: ListingsProps) {
         <h1 className="mt-3 text-[1.75rem] leading-tight font-bold tracking-tight md:text-[2.5rem]">{listingsHeading(filters, results.length)}</h1>
       </div>
 
-      <div className="sticky top-0 z-20 mt-4 border-y border-line bg-white/95 backdrop-blur [--focus:var(--color-brand)]">
+      <StickyFilters>
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <FilterBar options={options} filters={filters} sort={sort} />
         </div>
-      </div>
+      </StickyFilters>
 
       <div className="mx-auto max-w-7xl px-4 pt-6 pb-16 md:px-8">
         {chips.length > 0 ? (
@@ -121,7 +122,7 @@ export async function ListingsPage(props: ListingsProps) {
                   <Link
                     href={listingsHref(removeFilter(filters, chip.key), sort)}
                     aria-label={`Remover filtro: ${chip.label}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-navy/25 bg-mist py-1.5 pr-3 pl-4 hover:border-navy"
+                    className="inline-flex items-center gap-2 rounded-full border border-navy/25 bg-mist py-1.5 pr-3 pl-4 transition-colors duration-150 hover:border-navy"
                   >
                     {chip.label}
                     <FaXmark aria-hidden className="text-sm text-slate" />

@@ -7,13 +7,11 @@ import type { IconType } from 'react-icons';
 import { FaArrowsLeftRight, FaBath, FaBed, FaCar, FaCheck, FaChevronRight, FaShower } from 'react-icons/fa6';
 import { Gallery } from '@/components/property/Gallery';
 import { LeadForm } from '@/components/property/LeadForm';
-import { ShareButtons } from '@/components/property/ShareButtons';
 import { PropertyLink } from '@/components/PropertyLink';
 import { JsonLd } from '@/components/JsonLd';
 import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, SITE_URL } from '@/content';
 import { formatPrice } from '@/lib/format';
 import { listingsHref } from '@/lib/listings-url';
-import { withImageParams } from '@/lib/sanity/url';
 import { propertyGraph } from '@/lib/seo/jsonld';
 import { openGraphDefaults } from '@/lib/seo/metadata';
 import { ogPhoto, ogPhotoImage } from '@/lib/seo/og';
@@ -244,7 +242,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
             ) : null}
           </div>
 
-          <aside className="space-y-6 lg:sticky lg:top-4 lg:self-start">
+          <aside className="space-y-6 lg:sticky lg:top-[calc(var(--header-offset)+1rem)] lg:self-start">
             <section aria-labelledby="contato-titulo" className="border border-line bg-mist p-5">
               <h2 id="contato-titulo" className="mb-4 text-2xl font-bold text-slate">
                 Fale agora Conosco
@@ -262,12 +260,6 @@ export default async function PropertyPage({ params }: { params: Params }) {
                     </FactRow>
                   ))}
               </dl>
-              <p className="mt-4 mb-2 text-sm font-medium">Compartilhar:</p>
-              <ShareButtons
-                url={`${baseUrl}${property.href}`}
-                title={`${property.title}, ${property.neighborhood}`}
-                imageUrl={withImageParams(property.gallery[0].src, { w: 1200, fm: 'jpg' })}
-              />
             </section>
 
             <section aria-labelledby="central-titulo" className="bg-navy p-5 text-white">

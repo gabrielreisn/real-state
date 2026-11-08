@@ -126,7 +126,7 @@ export function Navigation({
         {menuOpen ? <FaXmark aria-hidden /> : <FaBars aria-hidden />} Menu
       </button>
 
-      <div id="menu-movel" hidden={!menuOpen} className="absolute inset-x-0 top-full border-b border-line bg-white px-4 pb-6 shadow-lg md:hidden">
+      <div id="menu-movel" hidden={!menuOpen} className="absolute inset-x-0 top-full border-b border-line bg-white px-4 pb-6 shadow-lg md:hidden group-data-[compact=true]/header:mt-2 group-data-[compact=true]/header:rounded-2xl group-data-[compact=true]/header:border">
         {groups.filter((group) => group.links.length > 0).map((group) => (
           <div key={group.label} className="border-b border-line py-3">
             <p className="py-1 font-semibold">{group.label}</p>

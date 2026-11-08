@@ -17,6 +17,10 @@ export type PropertySummary = {
   bathrooms?: number;
   parking?: number;
   image: Image;
+  /** Up to CARD_PHOTOS photos for the card carousel, the cover first. */
+  photos: Image[];
+  /** Every photo in the listing's gallery, for the card's "more photos" hint. */
+  photoCount: number;
   excerpt: string;
   /** Internal path when the listing has a page here; otherwise its page on the live site. */
   href: string;

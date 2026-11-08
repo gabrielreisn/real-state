@@ -36,7 +36,7 @@ export function Neighborhoods({ neighborhoods }: { neighborhoods: Neighborhood[]
         <p className="mt-2 max-w-xl text-lg text-slate">Escolha um bairro para ver os imóveis à venda nele.</p>
         <ul className={`mt-8 border-t border-line ${grid}`}>
           {first.map((neighborhood) => (
-            <NeighborhoodItem key={neighborhood.slug} neighborhood={neighborhood} />
+            <NeighborhoodItem key={`${neighborhood.city}/${neighborhood.slug}`} neighborhood={neighborhood} />
           ))}
         </ul>
         {rest.length > 0 ? (
@@ -48,7 +48,7 @@ export function Neighborhoods({ neighborhoods }: { neighborhoods: Neighborhood[]
             </summary>
             <ul className={`mt-4 border-t border-line ${grid}`}>
               {rest.map((neighborhood) => (
-                <NeighborhoodItem key={neighborhood.slug} neighborhood={neighborhood} />
+                <NeighborhoodItem key={`${neighborhood.city}/${neighborhood.slug}`} neighborhood={neighborhood} />
               ))}
             </ul>
           </details>

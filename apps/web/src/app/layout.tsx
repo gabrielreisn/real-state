@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang="pt-BR" className={schibsted.variable}>
-      <body>
+      <body className="flex min-h-dvh flex-col">
         <a
           href="#conteudo"
           className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3 focus:font-semibold focus:text-brand"
@@ -55,7 +55,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           Ir para o conteúdo
         </a>
         <Header />
-        <main id="conteudo">{children}</main>
+        {/* Grows to fill short pages, so the footer always sits at the bottom of the window. */}
+        <main id="conteudo" className="flex-1">
+          {children}
+        </main>
         <Footer />
         <WhatsAppButton />
         <JsonLd data={graph} />
