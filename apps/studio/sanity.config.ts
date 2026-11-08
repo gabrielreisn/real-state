@@ -13,10 +13,13 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
     // Keep the singleton out of "create new document" menus.
-    templates: (templates) => templates.filter(({ schemaType }) => schemaType !== 'siteSettings'),
+    // The singleton and website submissions are never created from inside Studio.
+    templates: (templates) => templates.filter(({ schemaType }) => !['siteSettings', 'propertySubmission'].includes(schemaType)),
   },
   document: {
     actions: (actions, { schemaType }) =>
-      schemaType === 'siteSettings' ? actions.filter(({ action }) => action !== 'duplicate' && action !== 'delete') : actions,
+      schemaType === 'siteSettings' || schemaType === 'propertySubmission'
+        ? actions.filter(({ action }) => action !== 'duplicate' && (schemaType === 'propertySubmission' || action !== 'delete'))
+        : actions,
   },
 });

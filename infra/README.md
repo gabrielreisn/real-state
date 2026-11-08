@@ -42,7 +42,8 @@ kubectl apply -k infra/k8s/overlays/local
      --from-literal=POSTGRES_USER=realstate \
      --from-literal=POSTGRES_PASSWORD="$PASSWORD" \
      --from-literal=POSTGRES_DB=realstate \
-     --from-literal=DATABASE_URL="postgres://realstate:$PASSWORD@postgres:5432/realstate"
+     --from-literal=DATABASE_URL="postgres://realstate:$PASSWORD@postgres:5432/realstate" \
+     --from-literal=SANITY_API_WRITE_TOKEN="$SANITY_EDITOR_TOKEN"
    ```
 
 3. Apply: `kubectl apply -k infra/k8s/overlays/production`

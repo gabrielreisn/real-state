@@ -3,7 +3,7 @@
 import { cache } from 'react';
 import { sanityFetch } from '@/lib/sanity/client';
 import { IMAGE_PROJECTION, type SanityImage, toImage } from '@/lib/sanity/image';
-import type { FeatureGroup, Neighborhood, PropertyDetail, PropertySummary, SiteSettings } from './types';
+import type { FeatureGroup, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
 
 export { legacy, phoneLink, whatsappLink } from './site';
 export type * from './types';
@@ -202,4 +202,22 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
     features: raw.features ?? [],
     similar: summaries(raw.similar),
   };
+});
+
+/** Pages listed under "Informações", in menu order. */
+export const getMenuPages = cache(async () =>
+  sanityFetch<MenuPage[]>(
+    `*[_type == "page" && defined(slug.current) && showInMenu != false] | order(coalesce(menuOrder, 999) asc, title asc) { title, "slug": slug.current }`,
+  ),
+);
+
+export const getPageSlugs = cache(async () => sanityFetch<{ page: string }[]>(`*[_type == "page" && defined(slug.current)] { "page": slug.current }`));
+
+export const getPage = cache(async (slug: string) => {
+  const page = await sanityFetch<(Page & { description: string | null; form: Page['form'] | null; formTitle: string | null }) | null>(
+    `*[_type == "page" && slug.current == $slug][0] { title, "slug": slug.current, description, "body": coalesce(body, []), form, formTitle }`,
+    { slug },
+  );
+  if (!page) return null;
+  return { ...page, description: page.description ?? undefined, form: page.form ?? undefined, formTitle: page.formTitle ?? undefined } satisfies Page;
 });

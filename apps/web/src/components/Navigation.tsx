@@ -3,16 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { FaBars, FaChevronDown, FaWhatsapp, FaXmark } from 'react-icons/fa6';
-import { legacy, phoneLink, whatsappLink } from '@/content/site';
+import { phoneLink, whatsappLink } from '@/content/site';
+import type { MenuPage } from '@/content/types';
 
 type NavLink = { label: string; href: string };
-
-const information: NavLink[] = [
-  { label: 'A Empresa', href: legacy('/sobre') },
-  { label: 'Cadastre seu Imóvel', href: legacy('/seu-imovel') },
-  { label: 'Financiamento', href: legacy('/financiamento') },
-  { label: 'Correspondente Bancário', href: legacy('/correspondente') },
-];
 
 function NavItemLink({ link, onNavigate, className }: { link: NavLink; onNavigate: () => void; className: string }) {
   if (link.href.startsWith('http')) {
@@ -29,13 +23,23 @@ function NavItemLink({ link, onNavigate, className }: { link: NavLink; onNavigat
   );
 }
 
-export function Navigation({ types, phone, whatsapp }: { types: string[]; phone: string; whatsapp: string }) {
+export function Navigation({
+  types,
+  pages,
+  phone,
+  whatsapp,
+}: {
+  types: string[];
+  pages: MenuPage[];
+  phone: string;
+  whatsapp: string;
+}) {
   const groups = [
     {
       label: 'Imóveis',
       links: [{ label: 'Todos à venda', href: '/#imoveis' }, ...types.map((type) => ({ label: type, href: `/?tipo=${encodeURIComponent(type)}#imoveis` }))],
     },
-    { label: 'Informações', links: information },
+    { label: 'Informações', links: pages.map((page) => ({ label: page.title, href: `/${page.slug}` })) },
   ];
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,7 +70,7 @@ export function Navigation({ types, phone, whatsapp }: { types: string[]; phone:
   return (
     <nav ref={nav} aria-label="Principal" className="flex flex-1 items-center justify-between gap-6">
       <ul className="hidden items-center gap-1 md:flex">
-        {groups.map((group) => {
+        {groups.filter((group) => group.links.length > 0).map((group) => {
           const open = openGroup === group.label;
           return (
             <li key={group.label} className="relative">
@@ -122,7 +126,7 @@ export function Navigation({ types, phone, whatsapp }: { types: string[]; phone:
       </button>
 
       <div id="menu-movel" hidden={!menuOpen} className="absolute inset-x-0 top-full border-b border-line bg-white px-4 pb-6 shadow-lg md:hidden">
-        {groups.map((group) => (
+        {groups.filter((group) => group.links.length > 0).map((group) => (
           <div key={group.label} className="border-b border-line py-3">
             <p className="py-1 font-semibold">{group.label}</p>
             <ul>

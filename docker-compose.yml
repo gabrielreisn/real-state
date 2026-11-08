@@ -68,6 +68,8 @@ services:
       SANITY_PROJECT_ID: ${SANITY_PROJECT_ID:-1ai1aq1e}
       SANITY_DATASET: ${SANITY_DATASET:-development}
       SANITY_API_READ_TOKEN: ${SANITY_API_READ_TOKEN:-}
+      # Lets the "Cadastre seu Imóvel" form save submissions to Sanity.
+      SANITY_API_WRITE_TOKEN: ${SANITY_API_WRITE_TOKEN:-}
     ports:
       - 127.0.0.1:3000:3000
     depends_on:

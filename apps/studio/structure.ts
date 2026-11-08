@@ -7,8 +7,18 @@ export const structure: StructureResolver = (S) =>
   S.list()
     .title('Conteúdo')
     .items([
+      S.listItem()
+        .title('Cadastros de imóveis')
+        .id('submissions')
+        .child(
+          S.documentTypeList('propertySubmission')
+            .title('Cadastros de imóveis')
+            .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+        ),
+      S.divider(),
       S.listItem().title('Configurações do site').id(SITE_SETTINGS_ID).child(S.document().schemaType('siteSettings').documentId(SITE_SETTINGS_ID)),
       S.divider(),
       S.documentTypeListItem('property').title('Imóveis'),
       S.documentTypeListItem('neighborhood').title('Bairros'),
+      S.documentTypeListItem('page').title('Páginas'),
     ]);

@@ -69,3 +69,15 @@ export type SiteSettings = {
   street: string;
   district: string;
 };
+
+export type MenuPage = { title: string; slug: string };
+
+export type PageForm = 'propertySubmission';
+
+export type Page = MenuPage & {
+  description?: string;
+  /** Portable Text from Sanity: blocks plus `linkCards` and `mapEmbed` objects. */
+  body: unknown[];
+  form?: PageForm;
+  formTitle?: string;
+};

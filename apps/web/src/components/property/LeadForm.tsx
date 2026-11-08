@@ -12,6 +12,8 @@ const fieldClass = 'w-full border border-line bg-white px-3 py-2.5 placeholder:t
 export function LeadForm({ propertyCode, whatsapp, id = 'lead' }: { propertyCode: string; whatsapp: string; id?: string }) {
   const [state, action, pending] = useActionState<LeadFormState, FormData>(submitLead, { status: 'idle' });
 
+  const values = state.status === 'error' ? state.values : undefined;
+
   if (state.status === 'success') {
     return (
       <p role="status" className="bg-white p-4 font-medium">
@@ -30,19 +32,19 @@ export function LeadForm({ propertyCode, whatsapp, id = 'lead' }: { propertyCode
       </div>
       <div>
         <label htmlFor={`${id}-name`} className="sr-only">Nome</label>
-        <input id={`${id}-name`} name="name" required maxLength={120} autoComplete="name" placeholder="Nome" className={fieldClass} />
+        <input id={`${id}-name`} name="name" required maxLength={120} autoComplete="name" placeholder="Nome" defaultValue={values?.name} className={fieldClass} />
       </div>
       <div>
         <label htmlFor={`${id}-email`} className="sr-only">E-mail (opcional)</label>
-        <input id={`${id}-email`} name="email" type="email" maxLength={254} autoComplete="email" placeholder="E-mail (opcional)" className={fieldClass} />
+        <input id={`${id}-email`} name="email" type="email" maxLength={254} autoComplete="email" placeholder="E-mail (opcional)" defaultValue={values?.email} className={fieldClass} />
       </div>
       <div>
         <label htmlFor={`${id}-phone`} className="sr-only">Telefone com DDD</label>
-        <input id={`${id}-phone`} name="phone" type="tel" required minLength={10} maxLength={30} autoComplete="tel" placeholder="Telefone com DDD" className={fieldClass} />
+        <input id={`${id}-phone`} name="phone" type="tel" required minLength={10} maxLength={30} autoComplete="tel" placeholder="Telefone com DDD" defaultValue={values?.phone} className={fieldClass} />
       </div>
       <div>
         <label htmlFor={`${id}-message`} className="sr-only">Mensagem</label>
-        <textarea id={`${id}-message`} name="message" required rows={5} maxLength={2000} defaultValue={DEFAULT_MESSAGE} className={fieldClass} />
+        <textarea id={`${id}-message`} name="message" required rows={5} maxLength={2000} defaultValue={values?.message ?? DEFAULT_MESSAGE} className={fieldClass} />
       </div>
       {state.status === 'error' && (
         <p role="alert" className="text-sm font-medium text-brand">

@@ -41,6 +41,10 @@ spec:
             - name: SANITY_DATASET
               valueFrom:
                 configMapKeyRef: { name: real-state-config, key: SANITY_DATASET }
+            # Saves "Cadastre seu Imóvel" submissions to Sanity.
+            - name: SANITY_API_WRITE_TOKEN
+              valueFrom:
+                secretKeyRef: { name: real-state-secrets, key: SANITY_API_WRITE_TOKEN, optional: true }
           livenessProbe:
             httpGet: { path: /, port: 3000 }
             initialDelaySeconds: 10

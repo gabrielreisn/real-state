@@ -263,9 +263,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@portabletext/react':
+        specifier: ^8.0.1
+        version: 8.0.1(react@19.3.1)
       '@sanity/client':
         specifier: ^8.15.0
-        version: 8.15.0(vitest@5.1.0(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)))
+        version: 8.15.0(vitest@5.1.0(@types/node@24.19.2)(jsdom@29.1.1(@noble/hashes@2.4.0))(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1)))
       '@sanity/image-url':
         specifier: ^2.1.1
         version: 2.1.1
@@ -9220,15 +9223,6 @@ snapshots:
     transitivePeerDependencies:
       - vitest
 
-  '@sanity/client@8.15.0(vitest@5.1.0(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)))':
-    dependencies:
-      eventsource: 5.1.4
-      get-it: 9.7.0(vitest@5.1.0(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)))
-      obug: 3.0.0
-      rxjs: 7.8.2
-    transitivePeerDependencies:
-      - vitest
-
   '@sanity/codegen@8.3.0(react@19.3.1)(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
       '@babel/core': 7.29.13(supports-color@8.1.1)
@@ -11703,12 +11697,6 @@ snapshots:
       tunnel-agent: 0.6.0
 
   get-it@9.7.0(vitest@5.1.0(@types/node@24.19.2)(jsdom@29.1.1(@noble/hashes@2.4.0))(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))):
-    dependencies:
-      undici: 7.30.2
-    optionalDependencies:
-      vitest: 5.1.0(@types/node@24.19.2)(jsdom@29.1.1(@noble/hashes@2.4.0))(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))
-
-  get-it@9.7.0(vitest@5.1.0(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0))):
     dependencies:
       undici: 7.30.2
     optionalDependencies:

@@ -37,6 +37,8 @@ Run `pnpm test`, `pnpm typecheck` and `pnpm lint` before pushing.
 
 - **Content** (listings, neighborhoods, contact details, featured listings) lives in Sanity. The web app reads it only through the functions in [apps/web/src/content/index.ts](apps/web/src/content/index.ts), and edits appear on the site within a minute.
 - **Images** are served by Sanity's image CDN. A custom `next/image` loader ([sanity-image-loader.ts](apps/web/src/lib/sanity-image-loader.ts)) requests each size with `auto=format` (WebP for browsers that support it) and a quality of 60, 75 or 85.
+- **Pages** such as A Empresa (`/sobre`) and Financiamento are Sanity `page` documents, rendered by `apps/web/src/app/[page]`. They appear in the "Informações" menu in menu order.
+- **Property submissions** from "Cadastre seu Imóvel" are validated by a server action and saved to Sanity as private documents (IDs like `submission.<uuid>`, never readable through the public API). They show up in Studio under "Cadastros de imóveis". The web app needs `SANITY_API_WRITE_TOKEN` for this.
 - **Leads** go from the contact form through a server action to `POST /leads` on the API, then into Postgres. The API is never exposed publicly and has no endpoint for reading leads.
 
 ## Sanity

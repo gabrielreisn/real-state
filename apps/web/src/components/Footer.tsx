@@ -1,15 +1,13 @@
-import { getSiteSettings, legacy, phoneLink, whatsappLink } from '@/content';
-
-const links = [
-  { label: 'A Empresa', href: legacy('/sobre') },
-  { label: 'Mapa de Localização', href: legacy('/sobre#mapa') },
-  { label: 'Cadastre seu Imóvel', href: legacy('/seu-imovel') },
-  { label: 'Financiamento', href: legacy('/financiamento') },
-  { label: 'Política de Diversidade', href: legacy('/pagina/politica-de-diversidade') },
-];
+import { getMenuPages, getSiteSettings, legacy, phoneLink, whatsappLink } from '@/content';
 
 export async function Footer() {
-  const site = await getSiteSettings();
+  const [site, pages] = await Promise.all([getSiteSettings(), getMenuPages()]);
+  const links = [
+    ...pages.map((page) => ({ label: page.title, href: `/${page.slug}` })),
+    // The office map lives on the "A Empresa" page when it has one.
+    ...(pages.some((page) => page.slug === 'sobre') ? [{ label: 'Mapa de Localização', href: '/sobre#mapa' }] : []),
+    { label: 'Política de Diversidade', href: legacy('/pagina/politica-de-diversidade') },
+  ];
   return (
     <footer id="contato" className="bg-navy text-white [--focus:#fff]">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-[1.5fr_1fr_1fr] md:px-8">
