@@ -47,6 +47,10 @@ export function Navigation({
   const [menuOpen, setMenuOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const nav = useRef<HTMLElement>(null);
+  const hovering = useRef(false);
+  const closeTimer = useRef<number>(undefined);
+
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
 
   useEffect(() => {
     if (!openGroup) return;
@@ -93,24 +97,47 @@ export function Navigation({
         {groups.filter((group) => group.links.length > 0).map((group) => {
           const open = openGroup === group.label;
           return (
-            <li key={group.label} className="relative">
+            <li
+              key={group.label}
+              className="relative"
+              onPointerEnter={(event) => {
+                if (event.pointerType !== 'mouse') return;
+                hovering.current = true;
+                window.clearTimeout(closeTimer.current);
+                setOpenGroup(group.label);
+              }}
+              onPointerLeave={(event) => {
+                if (event.pointerType !== 'mouse') return;
+                hovering.current = false;
+                closeTimer.current = window.setTimeout(() => setOpenGroup(null), 150);
+              }}
+            >
               <button
                 type="button"
                 aria-expanded={open}
-                onClick={() => setOpenGroup(open ? null : group.label)}
+                // A mouse click lands after hover has already opened the menu, so it must not close it.
+                onClick={() => setOpenGroup(open && !hovering.current ? null : group.label)}
                 className="flex items-center gap-1.5 px-3 py-2 font-medium hover:text-brand"
               >
-                {group.label} <FaChevronDown aria-hidden className={`text-[10px] ${open ? 'rotate-180' : ''}`} />
+                {group.label}{' '}
+                <FaChevronDown aria-hidden className={`text-[10px] transition-transform duration-200 ease-out motion-reduce:transition-none ${open ? 'rotate-180' : ''}`} />
               </button>
-              {open ? (
-                <ul className="absolute top-full left-0 mt-1 w-64 border border-line bg-white py-2 shadow-lg">
+              {/* Padding rather than margin: the pointer stays inside the <li> on its way down to the panel. */}
+              <div
+                className={`absolute top-full left-0 pt-2 transition-[opacity,translate,visibility] duration-200 ease-out motion-reduce:transition-none ${open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'}`}
+              >
+                <ul className="max-h-[calc(100dvh-var(--header-offset)-1.5rem)] w-64 overflow-y-auto overscroll-contain rounded-2xl border border-line/70 bg-white p-2 shadow-[0_18px_40px_-18px_rgb(15_26_58/0.35)]">
                   {group.links.map((link) => (
                     <li key={link.label}>
-                      <NavItemLink link={link} onNavigate={closeAll} className="block px-4 py-2 hover:bg-mist" />
+                      <NavItemLink
+                        link={link}
+                        onNavigate={closeAll}
+                        className="block rounded-lg px-3 py-2 text-slate transition-colors duration-150 hover:bg-mist hover:text-navy motion-reduce:transition-none"
+                      />
                     </li>
                   ))}
                 </ul>
-              ) : null}
+              </div>
             </li>
           );
         })}
