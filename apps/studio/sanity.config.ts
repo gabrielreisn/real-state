@@ -3,6 +3,7 @@ import { defineConfig, type WorkspaceOptions } from 'sanity';
 import { presentationTool } from 'sanity/presentation';
 import { structureTool } from 'sanity/structure';
 import { previewAction } from './actions/preview';
+import { ToolMenu } from './components/ToolMenu';
 import { resolve } from './presentation';
 import { schemaTypes } from './schemas';
 import { structure } from './structure';
@@ -32,6 +33,7 @@ function workspace({ dataset, title, subtitle, previewUrl }: { dataset: string; 
       }),
       visionTool(),
     ],
+    studio: { components: { toolMenu: ToolMenu } },
     schema: {
       types: schemaTypes,
       // Keep the singleton out of "create new document" menus.
