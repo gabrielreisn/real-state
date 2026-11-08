@@ -104,6 +104,19 @@ export const getProperties = cache(async () =>
   summaries(await sanityFetch<RawSummary[]>(`*[${LISTED}] | order(code desc) { ${SUMMARY_FIELDS} }`)),
 );
 
+/** What the site-wide structured data needs: a small query, so pages that list no properties don't fetch them all. */
+export const getListingStats = cache(async () => {
+  const stats = await sanityFetch<{ cities: (string | null)[]; minPrice: number | null; maxPrice: number | null }>(`{
+    "cities": array::unique(*[${LISTED}].neighborhood->city),
+    "minPrice": math::min(*[${LISTED} && price > 0].price),
+    "maxPrice": math::max(*[${LISTED} && price > 0].price)
+  }`);
+  return {
+    cities: stats.cities.filter((city): city is string => Boolean(city)).toSorted((a, b) => a.localeCompare(b, 'pt-BR')),
+    priceRange: stats.minPrice !== null && stats.maxPrice !== null ? ([stats.minPrice, stats.maxPrice] as [number, number]) : undefined,
+  };
+});
+
 export const getFeaturedProperties = cache(async () =>
   summaries(await sanityFetch<(RawSummary | null)[] | null>(`*[_id == "siteSettings"][0].featuredProperties[]->{ ${SUMMARY_FIELDS} }`)),
 );

@@ -10,6 +10,7 @@
     "import": "node import/run.ts"
   },
   "dependencies": {
+    "@sanity/icons": "^5.3.0",
     "@sanity/vision": "^6.22.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

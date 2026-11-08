@@ -8,7 +8,7 @@ import { Header } from '@/components/Header';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { JsonLd } from '@/components/JsonLd';
 import { PreviewBanner } from '@/components/PreviewBanner';
-import { getProperties, getSiteSettings, SITE_URL } from '@/content';
+import { getListingStats, getSiteSettings, SITE_URL } from '@/content';
 import { indexable, openGraphDefaults, SITE_NAME } from '@/lib/seo/metadata';
 import { siteGraph } from '@/lib/seo/jsonld';
 import { SanityLive } from '@/lib/sanity/live';
@@ -40,14 +40,8 @@ export const viewport: Viewport = { themeColor: '#0f1a3a', colorScheme: 'light' 
 
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [site, properties, { isEnabled: preview }] = await Promise.all([getSiteSettings(), getProperties(), draftMode()]);
-  const prices = properties.map((property) => property.price).filter((price): price is number => price !== null);
-  const graph = siteGraph({
-    siteUrl: SITE_URL,
-    site,
-    cities: [...new Set(properties.map((property) => property.city))].filter(Boolean).sort(),
-    priceRange: prices.length ? [Math.min(...prices), Math.max(...prices)] : undefined,
-  });
+  const [site, { cities, priceRange }, { isEnabled: preview }] = await Promise.all([getSiteSettings(), getListingStats(), draftMode()]);
+  const graph = siteGraph({ siteUrl: SITE_URL, site, cities, priceRange });
 
   return (
     <html lang="pt-BR" className={schibsted.variable}>

@@ -2,6 +2,7 @@ import { visionTool } from '@sanity/vision';
 import { defineConfig, type WorkspaceOptions } from 'sanity';
 import { presentationTool } from 'sanity/presentation';
 import { structureTool } from 'sanity/structure';
+import { previewAction } from './actions/preview';
 import { resolve } from './presentation';
 import { schemaTypes } from './schemas';
 import { structure } from './structure';
@@ -38,10 +39,12 @@ function workspace({ dataset, title, subtitle, previewUrl }: { dataset: string; 
       templates: (templates) => templates.filter(({ schemaType }) => !['siteSettings', 'propertySubmission'].includes(schemaType)),
     },
     document: {
-      actions: (actions, { schemaType }) =>
-        schemaType === 'siteSettings' || schemaType === 'propertySubmission'
-          ? actions.filter(({ action }) => action !== 'duplicate' && (schemaType === 'propertySubmission' || action !== 'delete'))
-          : actions,
+      actions: (actions, { schemaType }) => {
+        if (schemaType === 'propertySubmission') return actions.filter(({ action }) => action !== 'duplicate');
+        const allowed = schemaType === 'siteSettings' ? actions.filter(({ action }) => action !== 'duplicate' && action !== 'delete') : actions;
+        // Right after Publish, at the top of the "…" menu next to it.
+        return [...allowed.slice(0, 1), previewAction, ...allowed.slice(1)];
+      },
     },
   };
 }
