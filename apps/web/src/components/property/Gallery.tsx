@@ -59,7 +59,7 @@ export function Gallery({ images }: { images: GalleryImage[] }) {
         </span>
       </div>
 
-      <ul ref={thumbnails} className="scrollbar-none relative mt-2 flex gap-2 overflow-x-auto">
+      <ul ref={thumbnails} className="scrollbar-none relative mt-2 flex gap-2 overflow-x-auto overflow-y-hidden">
         {images.map((thumbnail, index) => (
           <li key={thumbnail.src} className="shrink-0">
             <button

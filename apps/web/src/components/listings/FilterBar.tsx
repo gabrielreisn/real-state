@@ -51,7 +51,7 @@ export function FilterBar({ options, filters, sort }: { options: SearchOptions; 
 
   return (
     <form action={LISTINGS_PATH} method="get" onSubmit={(event) => event.preventDefault()} aria-busy={pending}>
-      <div className="scrollbar-none -mx-4 flex items-center gap-2 overflow-x-auto px-4 py-3 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
+      <div className="scrollbar-none -mx-4 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-4 py-3 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
         <Control label="Cidade ou bairro">
           {(id) => (
             <select

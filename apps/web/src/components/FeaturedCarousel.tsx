@@ -46,7 +46,7 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
             const { scrollLeft, clientWidth } = event.currentTarget;
             setActive(Math.round(scrollLeft / clientWidth));
           }}
-          className="scrollbar-none relative mt-8 flex snap-x snap-mandatory overflow-x-auto scroll-smooth motion-reduce:scroll-auto"
+          className="scrollbar-none relative mt-8 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth motion-reduce:scroll-auto"
         >
           {properties.map((property, index) => (
             <li

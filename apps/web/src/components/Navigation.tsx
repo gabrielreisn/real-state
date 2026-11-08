@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FaBars, FaChevronDown, FaWhatsapp, FaXmark } from 'react-icons/fa6';
 import { phoneLink, whatsappLink } from '@/content/site';
 import type { MenuPage } from '@/content/types';
@@ -62,6 +63,24 @@ export function Navigation({
       document.removeEventListener('keydown', closeOnEscape);
     };
   }, [openGroup]);
+
+  // While the mobile menu is open the page behind it stays put, and the menu scrolls on its own.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = 'hidden';
+    const desktop = window.matchMedia('(min-width: 48rem)');
+    const closeOnDesktop = () => desktop.matches && setMenuOpen(false);
+    const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && setMenuOpen(false);
+    desktop.addEventListener('change', closeOnDesktop);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      root.style.overflow = previous;
+      desktop.removeEventListener('change', closeOnDesktop);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [menuOpen]);
 
   const closeAll = () => {
     setOpenGroup(null);
@@ -126,7 +145,16 @@ export function Navigation({
         {menuOpen ? <FaXmark aria-hidden /> : <FaBars aria-hidden />} Menu
       </button>
 
-      <div id="menu-movel" hidden={!menuOpen} className="absolute inset-x-0 top-full border-b border-line bg-white px-4 pb-6 shadow-lg md:hidden group-data-[compact=true]/header:mt-2 group-data-[compact=true]/header:rounded-2xl group-data-[compact=true]/header:border">
+      {/* The compact header's backdrop blur would trap a fixed child, so the dimmed backdrop lives on <body>. */}
+      {menuOpen
+        ? createPortal(<div aria-hidden onClick={closeAll} className="animate-fade-in fixed inset-0 z-20 bg-navy/40 md:hidden" />, document.body)
+        : null}
+
+      <div
+        id="menu-movel"
+        hidden={!menuOpen}
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-var(--header-offset))] overflow-y-auto overscroll-contain border-b border-line bg-white px-4 pb-6 shadow-lg md:hidden group-data-[compact=true]/header:mt-2 group-data-[compact=true]/header:max-h-[calc(100dvh-var(--header-offset)-0.75rem)] group-data-[compact=true]/header:rounded-2xl group-data-[compact=true]/header:border"
+      >
         {groups.filter((group) => group.links.length > 0).map((group) => (
           <div key={group.label} className="border-b border-line py-3">
             <p className="py-1 font-semibold">{group.label}</p>

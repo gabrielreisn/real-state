@@ -46,7 +46,7 @@ export function CardGallery({ photos, total, href }: { photos: Photo[]; total: n
           const { scrollLeft, clientWidth } = event.currentTarget;
           setIndex(Math.round(scrollLeft / clientWidth));
         }}
-        className="scrollbar-none flex aspect-[4/3] snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth motion-reduce:scroll-auto"
+        className="scrollbar-none flex aspect-[4/3] snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth motion-reduce:scroll-auto"
       >
         {photos.map((photo, i) => (
           <PropertyLink key={photo.src} href={href} tabIndex={-1} className="relative block h-full w-full shrink-0 snap-start snap-always overflow-hidden">

@@ -9,7 +9,7 @@ export async function WhatsAppButton() {
       target="_blank"
       rel="noreferrer"
       aria-label="Conversar pelo WhatsApp"
-      className="fixed right-4 bottom-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-3xl text-white shadow-lg md:hidden"
+      className="fixed right-4 bottom-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-3xl text-white shadow-lg md:hidden"
     >
       <FaWhatsapp aria-hidden />
     </a>
