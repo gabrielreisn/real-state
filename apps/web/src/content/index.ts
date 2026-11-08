@@ -1,7 +1,7 @@
-// The only module the app reads content through: published documents from Sanity, mapped
+// The only module the app reads content through: documents from Sanity (drafts in preview mode), mapped
 // into the shapes the components use.
 import { cache } from 'react';
-import { sanityFetch } from '@/lib/sanity/client';
+import { sanityFetch } from '@/lib/sanity/live';
 import { IMAGE_PROJECTION, type SanityImage, toImage } from '@/lib/sanity/image';
 import type { FeatureGroup, Image, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
 
@@ -141,6 +141,8 @@ export const getSiteSettings = cache(async () => {
 export const getPropertyDetailParams = cache(async () =>
   sanityFetch<{ id: string; slug: string }[]>(
     `*[${LISTED} && !defined(externalUrl)] { "id": coalesce(legacyId, code), "slug": slug.current }`,
+    {},
+    { published: true },
   ),
 );
 
@@ -235,7 +237,9 @@ export const getMenuPages = cache(async () =>
   ),
 );
 
-export const getPageSlugs = cache(async () => sanityFetch<{ page: string }[]>(`*[_type == "page" && defined(slug.current)] { "page": slug.current }`));
+export const getPageSlugs = cache(async () =>
+  sanityFetch<{ page: string }[]>(`*[_type == "page" && defined(slug.current)] { "page": slug.current }`, {}, { published: true }),
+);
 
 export const getPage = cache(async (slug: string) => {
   const page = await sanityFetch<(Page & { description: string | null; form: Page['form'] | null; formTitle: string | null }) | null>(
@@ -251,5 +255,5 @@ export const getSitemapEntries = cache(async () =>
   sanityFetch<{ properties: { href: string; updatedAt: string }[]; pages: { slug: string; updatedAt: string }[] }>(`{
     "properties": *[${LISTED}] { "href": coalesce(externalUrl, "/imovel/" + coalesce(legacyId, code) + "/" + slug.current), "updatedAt": _updatedAt },
     "pages": *[_type == "page" && defined(slug.current)] { "slug": slug.current, "updatedAt": _updatedAt }
-  }`),
+  }`, {}, { published: true }),
 );

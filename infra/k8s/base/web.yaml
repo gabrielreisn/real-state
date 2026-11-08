@@ -41,6 +41,10 @@ spec:
             - name: SANITY_DATASET
               valueFrom:
                 configMapKeyRef: { name: real-state-config, key: SANITY_DATASET }
+            # Viewer token for preview mode: drafts and live updates in the Studio's preview.
+            - name: SANITY_API_READ_TOKEN
+              valueFrom:
+                secretKeyRef: { name: real-state-secrets, key: SANITY_API_READ_TOKEN, optional: true }
             # Saves "Cadastre seu Imóvel" submissions to Sanity.
             - name: SANITY_API_WRITE_TOKEN
               valueFrom:

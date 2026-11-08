@@ -35,7 +35,7 @@ Run `pnpm test`, `pnpm typecheck` and `pnpm lint` before pushing.
 
 ## How data flows
 
-- **Content** (listings, neighborhoods, contact details, featured listings) lives in Sanity. The web app reads it only through the functions in [apps/web/src/content/index.ts](apps/web/src/content/index.ts), and edits appear on the site within a minute.
+- **Content** (listings, neighborhoods, contact details, featured listings) lives in Sanity. The web app reads it only through the functions in [apps/web/src/content/index.ts](apps/web/src/content/index.ts), Published edits reach the site within seconds: `<SanityLive />` listens for changes and revalidates only the cached queries they touch.
 - **Images** are served by Sanity's image CDN. A custom `next/image` loader ([sanity-image-loader.ts](apps/web/src/lib/sanity-image-loader.ts)) requests each size with `auto=format` (WebP for browsers that support it) and a quality of 60, 75 or 85.
 - **Pages** such as A Empresa (`/sobre`) and Financiamento are Sanity `page` documents, rendered by `apps/web/src/app/[page]`. They appear in the "Informações" menu in menu order.
 - **Property submissions** from "Cadastre seu Imóvel" are validated by a server action and saved to Sanity as private documents (IDs like `submission.<uuid>`, never readable through the public API). They show up in Studio under "Cadastros de imóveis". The web app needs `SANITY_API_WRITE_TOKEN` for this.
@@ -43,10 +43,24 @@ Run `pnpm test`, `pnpm typecheck` and `pnpm lint` before pushing.
 
 ## Sanity
 
-Local development uses the `development` dataset of project `1ai1aq1e`; production will use `production`. The content was imported into `development` once. To fill another dataset, copy it:
+The Studio has two workspaces, one per dataset of project `1ai1aq1e`:
+
+- **Produção** (`/production`): the real content, read by the deployed site.
+- **Desenvolvimento** (`/development`): a scratch copy for imports and schema experiments, read by the site when it runs locally.
+
+### Preview
+
+Edits are drafts until published, and visitors only ever see published content. To see drafts on the site, open **Pré-visualização** in the Studio: it shows the site beside the editor, updates as you type, and clicking a text on the page opens its field. Each document also lists the pages it appears on.
+
+How it works: the Studio calls `/api/draft-mode/enable` with a one-time secret, which switches on Next.js Draft Mode for that browser. In Draft Mode the same queries read drafts, uncached, with click-to-edit markers on display text (the fields in `EDITABLE` in [client.ts](apps/web/src/lib/sanity/client.ts); names, slugs and phone numbers stay clean because the site builds URLs from them). A banner with a "Sair" button shows when preview mode is on outside the Studio.
+
+It needs a Viewer token as `SANITY_API_READ_TOKEN` in the web app, and the site's origin in the project's CORS settings with credentials allowed.
+
+To fill a dataset from another, export and import it (`sanity dataset copy` needs a paid plan). Images keep their IDs, so references stay valid. The target must exist and is merged into, not replaced:
 
 ```bash
-pnpm --filter studio exec sanity dataset copy development production
+pnpm --filter studio exec sanity dataset export development /tmp/development.tar.gz
+pnpm --filter studio exec sanity dataset import /tmp/development.tar.gz production
 ```
 
 ### Importing listings from the current site

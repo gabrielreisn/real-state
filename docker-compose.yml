@@ -68,7 +68,9 @@ services:
       SITE_URL: ${SITE_URL:-http://localhost:3000}
       SANITY_PROJECT_ID: ${SANITY_PROJECT_ID:-1ai1aq1e}
       SANITY_DATASET: ${SANITY_DATASET:-development}
+      # Viewer token for preview mode (drafts, live updates in the Studio's preview).
       SANITY_API_READ_TOKEN: ${SANITY_API_READ_TOKEN:-}
+      SANITY_STUDIO_URL: ${SANITY_STUDIO_URL:-http://localhost:3333}
       # Lets the "Cadastre seu Imóvel" form save submissions to Sanity.
       SANITY_API_WRITE_TOKEN: ${SANITY_API_WRITE_TOKEN:-}
     ports:

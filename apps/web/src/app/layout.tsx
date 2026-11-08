@@ -1,13 +1,17 @@
 import type { Metadata, Viewport } from 'next';
 import { Schibsted_Grotesk } from 'next/font/google';
+import { draftMode } from 'next/headers';
+import { VisualEditing } from 'next-sanity/visual-editing';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { JsonLd } from '@/components/JsonLd';
+import { PreviewBanner } from '@/components/PreviewBanner';
 import { getProperties, getSiteSettings, SITE_URL } from '@/content';
 import { indexable, openGraphDefaults, SITE_NAME } from '@/lib/seo/metadata';
 import { siteGraph } from '@/lib/seo/jsonld';
+import { SanityLive } from '@/lib/sanity/live';
 import './globals.css';
 
 const schibsted = Schibsted_Grotesk({ subsets: ['latin'], variable: '--font-schibsted' });
@@ -36,7 +40,7 @@ export const viewport: Viewport = { themeColor: '#0f1a3a', colorScheme: 'light' 
 
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [site, properties] = await Promise.all([getSiteSettings(), getProperties()]);
+  const [site, properties, { isEnabled: preview }] = await Promise.all([getSiteSettings(), getProperties(), draftMode()]);
   const prices = properties.map((property) => property.price).filter((price): price is number => price !== null);
   const graph = siteGraph({
     siteUrl: SITE_URL,
@@ -62,6 +66,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Footer />
         <WhatsAppButton />
         <JsonLd data={graph} />
+        {/* Refreshes cached content when it changes in Sanity; in preview mode, on every draft edit. */}
+        <SanityLive />
+        {preview ? (
+          <>
+            <VisualEditing />
+            <PreviewBanner />
+          </>
+        ) : null}
       </body>
     </html>
   );

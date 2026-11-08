@@ -33,7 +33,7 @@ kubectl apply -k infra/k8s/overlays/local
 ## Production
 
 1. Build and push the three images, then set their registry and tag in `overlays/production/kustomization.yaml`.
-   Build the Studio image with `--build-arg SANITY_STUDIO_PROJECT_ID=<your project>`, because the ID is compiled in.
+   Build the Studio image with `--build-arg SANITY_STUDIO_PROJECT_ID=<your project>` and `--build-arg SANITY_STUDIO_PRODUCTION_URL=<site URL>`, because both are compiled in.
 2. Create the namespace and the Secret. It is never committed:
 
    ```bash
@@ -43,7 +43,8 @@ kubectl apply -k infra/k8s/overlays/local
      --from-literal=POSTGRES_PASSWORD="$PASSWORD" \
      --from-literal=POSTGRES_DB=realstate \
      --from-literal=DATABASE_URL="postgres://realstate:$PASSWORD@postgres:5432/realstate" \
-     --from-literal=SANITY_API_WRITE_TOKEN="$SANITY_EDITOR_TOKEN"
+     --from-literal=SANITY_API_WRITE_TOKEN="$SANITY_EDITOR_TOKEN" \
+     --from-literal=SANITY_API_READ_TOKEN="$SANITY_VIEWER_TOKEN"
    ```
 
 3. Apply: `kubectl apply -k infra/k8s/overlays/production`
