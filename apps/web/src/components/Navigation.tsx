@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FaBars, FaChevronDown, FaWhatsapp, FaXmark } from 'react-icons/fa6';
 import { phoneLink, whatsappLink } from '@/content/site';
 import type { MenuPage } from '@/content/types';
+import { listingsHref } from '@/lib/listings-url';
 
 type NavLink = { label: string; href: string };
 
@@ -37,7 +38,7 @@ export function Navigation({
   const groups = [
     {
       label: 'Imóveis',
-      links: [{ label: 'Todos à venda', href: '/#imoveis' }, ...types.map((type) => ({ label: type, href: `/?tipo=${encodeURIComponent(type)}#imoveis` }))],
+      links: [{ label: 'Todos à venda', href: listingsHref({}) }, ...types.map((type) => ({ label: type, href: listingsHref({ tipo: type }) }))],
     },
     { label: 'Informações', links: pages.map((page) => ({ label: page.title, href: `/${page.slug}` })) },
   ];

@@ -1,10 +1,12 @@
 'use client';
 
-import { type FormEvent, type ReactNode, useId } from 'react';
+import { useRouter } from 'next/navigation';
+import { type FormEvent, type ReactNode, useId, useMemo, useState } from 'react';
 import { FaChevronDown } from 'react-icons/fa6';
-import { bedroomsLabel, locationValue, parseLocation } from '@/lib/filters';
+import type { PropertySummary } from '@/content/types';
+import { bedroomsLabel, filterProperties, locationValue, parseLocation, type PropertyFilters, searchOptions } from '@/lib/filters';
 import { formatPriceShort, plural } from '@/lib/format';
-import { useSearch } from './SearchProvider';
+import { LISTINGS_PATH, listingsHref } from '@/lib/listings-url';
 
 function Choice({
   label,
@@ -34,16 +36,19 @@ function Choice({
 }
 
 /**
- * The search reads the way a buyer would describe what they want to a broker.
- * Every change filters the list right away; the button only takes you to it.
- * Without JavaScript it is a plain GET form that the server filters.
+ * The search reads the way a buyer would describe what they want to a broker. The button
+ * shows the live count and opens the listings page with those filters. Without JavaScript
+ * it is a plain GET form to the same page.
  */
-export function SearchSentence() {
-  const {
-    state: { filters },
-    actions,
-    meta: { options, results },
-  } = useSearch();
+export function SearchSentence({ properties }: { properties: PropertySummary[] }) {
+  const router = useRouter();
+  const [filters, setFilters] = useState<PropertyFilters>({});
+  const options = useMemo(() => searchOptions(properties), [properties]);
+  const results = useMemo(() => filterProperties(properties, filters), [properties, filters]);
+  const actions = {
+    update: (patch: Partial<PropertyFilters>) => setFilters((current) => ({ ...current, ...patch })),
+    clear: () => setFilters({}),
+  };
 
   const bedrooms = filters.dormitorios === undefined ? '' : `${filters.dormitorios}${filters.dormitoriosOuMais ? '+' : ''}`;
   const filtered = Object.values(filters).some((value) => value !== undefined);
@@ -51,11 +56,11 @@ export function SearchSentence() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    actions.showResults();
+    router.push(listingsHref(filters));
   }
 
   return (
-    <form action="/#imoveis" method="get" onSubmit={handleSubmit}>
+    <form action={LISTINGS_PATH} method="get" onSubmit={handleSubmit}>
       <p className="max-w-5xl text-[1.75rem] leading-[1.45] font-semibold tracking-tight text-pretty sm:text-[2.25rem] lg:text-[2.75rem] lg:leading-[1.4]">
         Procuro{' '}
         <Choice label="Tipo de imóvel" name="tipo" value={filters.tipo ?? ''} onChange={(tipo) => actions.update({ tipo: tipo || undefined })}>

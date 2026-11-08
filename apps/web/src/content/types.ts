@@ -68,6 +68,11 @@ export type SiteSettings = {
   email: string;
   street: string;
   district: string;
+  postalCode?: string;
+  addressLocality?: string;
+  addressRegion?: string;
+  openingHours: { days: string[]; opens: string; closes: string }[];
+  sameAs: string[];
 };
 
 export type MenuPage = { title: string; slug: string };

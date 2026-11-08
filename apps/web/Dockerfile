@@ -3,7 +3,9 @@ FROM node:26-alpine AS build
 # The build prerenders pages from Sanity, so it needs the (public) project and dataset.
 ARG SANITY_PROJECT_ID
 ARG SANITY_DATASET
-ENV NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID=$SANITY_PROJECT_ID SANITY_DATASET=$SANITY_DATASET
+# Canonical URLs and share links are baked into prerendered pages, so the build needs the public URL.
+ARG SITE_URL
+ENV NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID=$SANITY_PROJECT_ID SANITY_DATASET=$SANITY_DATASET SITE_URL=$SITE_URL
 RUN npm install -g pnpm@12.6.0
 WORKDIR /repo
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./

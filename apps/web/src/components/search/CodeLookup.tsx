@@ -2,30 +2,28 @@
 
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useId, useState } from 'react';
-import { useSearch } from './SearchProvider';
+import { LISTINGS_PATH } from '@/lib/listings-url';
 
 /** Opens a listing straight from the code printed on a flyer, sign or ad. */
-export function CodeLookup() {
-  const { meta } = useSearch();
+export function CodeLookup({ listings }: { listings: { code: string; href: string }[] }) {
   const router = useRouter();
   const id = useId();
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const code = String(new FormData(event.currentTarget).get('codigo') ?? '').trim();
+    const code = String(new FormData(event.currentTarget).get('codigo') ?? '').trim().replace(/^#/, '');
     if (!code) return setError('Digite o código que aparece no anúncio.');
 
-    const property = meta.findByCode(code);
-    if (!property) return setError(`Nenhum anúncio com o código ${code}. Confira o número e tente de novo.`);
+    const listing = listings.find((candidate) => candidate.code === code);
+    if (!listing) return setError(`Nenhum anúncio com o código ${code}. Confira o número e tente de novo.`);
 
     setError(null);
-    if (property.href.startsWith('http')) window.location.assign(property.href);
-    else router.push(property.href);
+    router.push(listing.href);
   }
 
   return (
-    <form action="/#imoveis" method="get" onSubmit={handleSubmit} className="mt-10 border-t border-white/20 pt-6">
+    <form action={LISTINGS_PATH} method="get" onSubmit={handleSubmit} className="mt-10 border-t border-white/20 pt-6">
       <div className="flex flex-wrap items-center gap-3">
         <label htmlFor={id} className="text-on-navy">
           Já tem o código do anúncio?

@@ -107,7 +107,11 @@ export const getNeighborhoods = cache(
 
 export const getSiteSettings = cache(async () => {
   const settings = await sanityFetch<SiteSettings | null>(
-    `*[_id == "siteSettings"][0] { name, brandName, role, creci, phone, whatsapp, email, street, district }`,
+    `*[_id == "siteSettings"][0] {
+      name, brandName, role, creci, phone, whatsapp, email, street, district, postalCode, addressLocality, addressRegion,
+      "openingHours": coalesce(openingHours[]{ "days": coalesce(days, []), opens, closes }, []),
+      "sameAs": coalesce(sameAs, [])
+    }`,
   );
   if (!settings) throw new Error('The "siteSettings" document is missing from the dataset. Create it in Sanity Studio, or copy a dataset that has it.');
   return settings;
@@ -221,3 +225,11 @@ export const getPage = cache(async (slug: string) => {
   if (!page) return null;
   return { ...page, description: page.description ?? undefined, form: page.form ?? undefined, formTitle: page.formTitle ?? undefined } satisfies Page;
 });
+
+/** Everything the sitemap lists, with last-modified dates from Sanity. */
+export const getSitemapEntries = cache(async () =>
+  sanityFetch<{ properties: { href: string; updatedAt: string }[]; pages: { slug: string; updatedAt: string }[] }>(`{
+    "properties": *[${LISTED}] { "href": coalesce(externalUrl, "/imovel/" + coalesce(legacyId, code) + "/" + slug.current), "updatedAt": _updatedAt },
+    "pages": *[_type == "page" && defined(slug.current)] { "slug": slug.current, "updatedAt": _updatedAt }
+  }`),
+);

@@ -61,6 +61,7 @@ services:
       args:
         SANITY_PROJECT_ID: ${SANITY_PROJECT_ID:-1ai1aq1e}
         SANITY_DATASET: ${SANITY_DATASET:-development}
+        SITE_URL: ${SITE_URL:-http://localhost:3000}
     restart: unless-stopped
     environment:
       API_INTERNAL_URL: http://api:4000

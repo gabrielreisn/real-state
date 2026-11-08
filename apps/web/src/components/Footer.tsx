@@ -3,6 +3,7 @@ import { getMenuPages, getSiteSettings, legacy, phoneLink, whatsappLink } from '
 export async function Footer() {
   const [site, pages] = await Promise.all([getSiteSettings(), getMenuPages()]);
   const links = [
+    { label: 'Imóveis à venda', href: '/imoveis' },
     ...pages.map((page) => ({ label: page.title, href: `/${page.slug}` })),
     // The office map lives on the "A Empresa" page when it has one.
     ...(pages.some((page) => page.slug === 'sobre') ? [{ label: 'Mapa de Localização', href: '/sobre#mapa' }] : []),

@@ -9,9 +9,14 @@ import { Gallery } from '@/components/property/Gallery';
 import { LeadForm } from '@/components/property/LeadForm';
 import { ShareButtons } from '@/components/property/ShareButtons';
 import { PropertyLink } from '@/components/PropertyLink';
-import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, type PropertyDetail, SITE_URL } from '@/content';
+import { JsonLd } from '@/components/JsonLd';
+import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, SITE_URL } from '@/content';
 import { formatPrice } from '@/lib/format';
+import { listingsHref } from '@/lib/listings-url';
 import { withImageParams } from '@/lib/sanity/url';
+import { propertyGraph } from '@/lib/seo/jsonld';
+import { openGraphDefaults } from '@/lib/seo/metadata';
+import { ogPhoto, ogPhotoImage } from '@/lib/seo/og';
 
 type Params = Promise<{ id: string; slug: string }>;
 
@@ -30,34 +35,17 @@ async function loadProperty(params: Params) {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const property = await loadProperty(params);
-  const description = `${property.title}, ${property.summary}`;
+  const description = [`${property.title}, ${property.summary}`, formatPrice(property.price), `Código ${property.code}.`].join('. ').replace(/\.\./g, '.');
+  const title = `${property.type} em ${property.neighborhood}, ${property.city}`;
   return {
-    title: `${property.title}, ${property.neighborhood}`,
+    title: `${title} – ${formatPrice(property.price)}`,
     description,
     alternates: { canonical: property.href },
-    openGraph: { title: property.title, description, url: property.href, images: [withImageParams(property.gallery[0].src, { w: 1200, h: 630, fit: 'crop', fm: 'jpg' })] },
+    openGraph: { ...openGraphDefaults, title, description, url: property.href, images: [ogPhotoImage(property.image.src, property.image.alt || title)] },
+    twitter: { card: 'summary_large_image', title, description, images: [ogPhoto(property.image.src)] },
+    // Read by Facebook and WhatsApp for listings with a published price.
+    other: property.price !== null ? { 'product:price:amount': String(property.price), 'product:price:currency': 'BRL' } : {},
   };
-}
-
-function jsonLd(property: PropertyDetail, baseUrl: string) {
-  const data = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateListing',
-    name: `${property.title}, ${property.neighborhood}`,
-    description: property.summary,
-    url: `${baseUrl}${property.href}`,
-    image: property.gallery.slice(0, 6).map((image) => withImageParams(image.src, { w: 1200, fm: 'jpg' })),
-    offers: { '@type': 'Offer', price: property.price, priceCurrency: 'BRL' },
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: property.address,
-      addressLocality: property.city,
-      addressRegion: property.state,
-      addressCountry: 'BR',
-    },
-  };
-  // Keeps listing text from closing the script tag.
-  return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
 function Stat({ icon: Icon, value, label }: { icon: IconType; value: string | number; label: string }) {
@@ -127,18 +115,15 @@ export default async function PropertyPage({ params }: { params: Params }) {
 
   const breadcrumbs = [
     { label: 'Inicial', href: '/' },
-    { label: 'Venda', href: '/#imoveis' },
-    { label: property.type, href: `/?tipo=${property.type}#imoveis` },
-    { label: property.city, href: `/?cidade=${encodeURIComponent(property.city)}#imoveis` },
-    {
-      label: property.neighborhood,
-      href: `/?cidade=${encodeURIComponent(property.city)}&bairro=${encodeURIComponent(property.neighborhood)}#imoveis`,
-    },
+    { label: 'Venda', href: listingsHref({}) },
+    { label: property.type, href: listingsHref({ tipo: property.type }) },
+    { label: property.city, href: listingsHref({ cidade: property.city }) },
+    { label: property.neighborhood, href: listingsHref({ cidade: property.city, bairro: property.neighborhood }) },
   ];
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(property, baseUrl) }} />
+      <JsonLd data={propertyGraph({ siteUrl: baseUrl, property, breadcrumbs })} />
 
       <div className="bg-navy py-6 text-white">
         <p className="mx-auto max-w-7xl px-4 font-display text-2xl font-bold md:px-8 md:text-3xl">Detalhes do Imóvel</p>

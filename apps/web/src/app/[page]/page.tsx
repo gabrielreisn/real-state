@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageBody } from '@/components/page/PageBody';
 import { PropertySubmissionForm } from '@/components/page/PropertySubmissionForm';
-import { getPage, getPageSlugs, getSiteSettings } from '@/content';
+import { JsonLd } from '@/components/JsonLd';
+import { getPage, getPageSlugs, getSiteSettings, SITE_URL } from '@/content';
+import { pageGraph } from '@/lib/seo/jsonld';
+import { openGraphDefaults } from '@/lib/seo/metadata';
 
 type Params = Promise<{ page: string }>;
 
@@ -19,7 +22,12 @@ async function loadPage(params: Params) {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const page = await loadPage(params);
-  return { title: page.title, description: page.description, alternates: { canonical: `/${page.slug}` } };
+  return {
+    title: page.title,
+    description: page.description,
+    alternates: { canonical: `/${page.slug}` },
+    openGraph: { ...openGraphDefaults, type: page.slug === 'sobre' ? 'profile' : 'website', title: page.title, description: page.description, url: `/${page.slug}` },
+  };
 }
 
 export default async function InformationPage({ params }: { params: Params }) {
@@ -43,6 +51,16 @@ export default async function InformationPage({ params }: { params: Params }) {
           </aside>
         ) : null}
       </div>
+      <JsonLd
+        data={pageGraph({
+          siteUrl: SITE_URL,
+          page,
+          breadcrumbs: [
+            { label: 'Início', href: '/' },
+            { label: page.title, href: `/${page.slug}` },
+          ],
+        })}
+      />
     </>
   );
 }

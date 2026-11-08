@@ -1,10 +1,13 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Schibsted_Grotesk } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
-import { SITE_URL } from '@/content';
+import { JsonLd } from '@/components/JsonLd';
+import { getProperties, getSiteSettings, SITE_URL } from '@/content';
+import { indexable, openGraphDefaults, SITE_NAME } from '@/lib/seo/metadata';
+import { siteGraph } from '@/lib/seo/jsonld';
 import './globals.css';
 
 const schibsted = Schibsted_Grotesk({ subsets: ['latin'], variable: '--font-schibsted' });
@@ -12,15 +15,36 @@ const schibsted = Schibsted_Grotesk({ subsets: ['latin'], variable: '--font-schi
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Alexandros Nolasco, Alex Nolasco, Imobiliária em Vitória - ES, Imobiliária em Jardim Camburi',
-    template: '%s | Alex Nolasco Imóveis',
+    default: 'Alex Nolasco Imóveis | Imóveis à venda em Vitória, Vila Velha e Serra - ES',
+    template: `%s | ${SITE_NAME}`,
   },
   description:
-    'Alexandros Nolasco, Imobiliária em Vitória - ES. Apartamentos em Jardim Camburi, Jardim da Penha, Vila Velha e Serra/ES.',
-  openGraph: { locale: 'pt_BR', type: 'website', siteName: 'Alex Nolasco Imóveis' },
+    'Apartamentos, casas, terrenos e imóveis comerciais à venda na Grande Vitória com Alexandros Nolasco, consultor imobiliário (Creci/ES 12470-F).',
+  applicationName: SITE_NAME,
+  authors: [{ name: 'Alexandros Nolasco' }],
+  creator: 'Alexandros Nolasco',
+  publisher: 'Alexandros Nolasco',
+  category: 'real estate',
+  openGraph: openGraphDefaults,
+  twitter: { card: 'summary_large_image' },
+  robots: indexable
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } }
+    : { index: false, follow: false },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export const viewport: Viewport = { themeColor: '#0f1a3a', colorScheme: 'light' };
+
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const [site, properties] = await Promise.all([getSiteSettings(), getProperties()]);
+  const prices = properties.map((property) => property.price).filter((price): price is number => price !== null);
+  const graph = siteGraph({
+    siteUrl: SITE_URL,
+    site,
+    cities: [...new Set(properties.map((property) => property.city))].filter(Boolean).sort(),
+    priceRange: prices.length ? [Math.min(...prices), Math.max(...prices)] : undefined,
+  });
+
   return (
     <html lang="pt-BR" className={schibsted.variable}>
       <body>
@@ -34,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <main id="conteudo">{children}</main>
         <Footer />
         <WhatsAppButton />
+        <JsonLd data={graph} />
       </body>
     </html>
   );
