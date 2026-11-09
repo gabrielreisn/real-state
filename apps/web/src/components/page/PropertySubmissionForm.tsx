@@ -2,10 +2,13 @@
 
 import { type ReactNode, useActionState, useId } from 'react';
 import { type SubmissionState, submitProperty } from '@/app/[page]/actions';
+import { Select } from '@/components/ui/Select';
 import { whatsappLink } from '@/content/site';
 import { PROPERTY_TYPES, PURPOSES } from '@/lib/property-submission';
 
 const inputClass = 'w-full border border-line bg-white px-3 py-2.5 placeholder:text-slate';
+const selectClass = `${inputClass} flex items-center justify-between gap-3 text-left`;
+const toOptions = (values: readonly string[]) => [{ options: values.map((value) => ({ value, label: value })) }];
 
 function Field({ label, optional, children }: { label: string; optional?: boolean; children: (id: string) => ReactNode }) {
   const id = useId();
@@ -69,23 +72,12 @@ export function PropertySubmissionForm({ whatsapp }: { whatsapp: string }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
         <Field label="Tipo de imóvel">
           {(id) => (
-            <select id={id} name="propertyType" required defaultValue={values.propertyType ?? ''} className={inputClass}>
-              <option value="" disabled>
-                Selecione
-              </option>
-              {PROPERTY_TYPES.map((type) => (
-                <option key={type}>{type}</option>
-              ))}
-            </select>
+            <Select id={id} name="propertyType" required groups={toOptions(PROPERTY_TYPES)} defaultValue={values.propertyType ?? ''} placeholder="Selecione" className={selectClass} />
           )}
         </Field>
         <Field label="Finalidade">
           {(id) => (
-            <select id={id} name="purpose" required defaultValue={values.purpose ?? 'Venda'} className={inputClass}>
-              {PURPOSES.map((purpose) => (
-                <option key={purpose}>{purpose}</option>
-              ))}
-            </select>
+            <Select id={id} name="purpose" required groups={toOptions(PURPOSES)} defaultValue={values.purpose ?? 'Venda'} className={selectClass} />
           )}
         </Field>
       </div>
@@ -114,7 +106,7 @@ export function PropertySubmissionForm({ whatsapp }: { whatsapp: string }) {
           </a>
         </p>
       ) : null}
-      <button type="submit" disabled={pending} className="w-full bg-brand py-3 font-semibold text-white hover:bg-brand-dark disabled:opacity-60">
+      <button type="submit" disabled={pending} className="w-full rounded-lg bg-brand py-3 font-semibold text-white hover:bg-brand-dark disabled:opacity-60">
         {pending ? 'Enviando…' : 'Enviar cadastro'}
       </button>
     </form>
