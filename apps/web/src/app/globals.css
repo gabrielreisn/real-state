@@ -28,6 +28,11 @@
     scroll-padding-top: calc(var(--header-offset) + 1.5rem);
   }
 
+  /* The page behind an open dialog doesn't scroll. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   body {
     @apply bg-white font-sans text-ink antialiased;
   }
