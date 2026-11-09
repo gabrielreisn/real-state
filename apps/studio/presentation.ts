@@ -16,9 +16,7 @@ export type PathFields = {
   title?: string;
   type?: string;
   code?: string;
-  legacyId?: string;
   slug?: string;
-  externalUrl?: string;
   name?: string;
   city?: string;
 };
@@ -33,9 +31,8 @@ const LISTINGS: Location = { title: 'Imóveis à venda', href: '/imoveis' };
 export function documentLocations(schemaType: string, doc: PathFields): Location[] {
   switch (schemaType) {
     case 'property':
-      // Listings with an external link still open on the old site, so they have no page here.
-      if (!doc.slug || doc.externalUrl) return [];
-      return [{ title: doc.title || `${doc.type} · código ${doc.code}`, href: `/imovel/${doc.legacyId || doc.code}/${doc.slug}` }, LISTINGS];
+      if (!doc.slug || !doc.code) return [];
+      return [{ title: doc.title || `${doc.type} · código ${doc.code}`, href: `/imovel/${doc.code}/${doc.slug}` }, LISTINGS];
     case 'neighborhood':
       return doc.name && doc.city ? [{ title: `Imóveis em ${doc.name}, ${doc.city}`, href: `/imoveis/${slugify(doc.city)}/${slugify(doc.name)}` }] : [];
     case 'page':
@@ -48,14 +45,14 @@ export function documentLocations(schemaType: string, doc: PathFields): Location
 }
 
 const SELECT: Record<string, Record<string, string>> = {
-  property: { title: 'title', type: 'type', code: 'code', legacyId: 'legacyId', slug: 'slug.current', externalUrl: 'externalUrl' },
+  property: { title: 'title', type: 'type', code: 'code', slug: 'slug.current' },
   neighborhood: { name: 'name', city: 'city' },
   page: { title: 'title', slug: 'slug.current' },
   siteSettings: {},
 };
 
 const MISSING: Record<string, string> = {
-  property: 'Defina o slug (ou apague o "Anúncio no site antigo") para ver o imóvel no site.',
+  property: 'Defina o código e o slug para ver o imóvel no site.',
   neighborhood: 'Defina o nome e a cidade para ver o bairro no site.',
   page: 'Defina o slug para ver a página no site.',
 };
@@ -64,7 +61,7 @@ const MISSING: Record<string, string> = {
 export const resolve: PresentationPluginOptions['resolve'] = {
   // The document to edit when the preview navigates to a page.
   mainDocuments: defineDocuments([
-    { route: '/imovel/:id/:slug', filter: `_type == "property" && coalesce(legacyId, code) == $id` },
+    { route: '/imovel/:id/:slug', filter: `_type == "property" && code == $id` },
     { route: '/:page', filter: `_type == "page" && slug.current == $page` },
   ]),
   locations: Object.fromEntries(

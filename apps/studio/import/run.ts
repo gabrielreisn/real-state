@@ -247,7 +247,6 @@ async function writeListings(listings: Listing[]) {
       const facts = Object.fromEntries(
         Object.entries({
           code: listing.code,
-          legacyId: listing.legacyId,
           slug: { _type: 'slug', current: listing.slug },
           title: listing.title,
           summary: listing.summary,
@@ -288,8 +287,8 @@ async function writeListings(listings: Listing[]) {
 
       transaction.createIfNotExists({ _id: id, _type: 'property', code: listing.code });
       transaction.patch(id, (patch) => {
-        // One unset call: a second unset() replaces the first instead of adding to it.
-        let next = patch.set(facts).setIfMissing(content).unset(listing.price === null ? ['externalUrl', 'price'] : ['externalUrl']);
+        // The public URL is always based on the property's code; imported legacy fields are no longer kept.
+        let next = patch.set(facts).setIfMissing(content).unset(listing.price === null ? ['legacyId', 'externalUrl', 'price'] : ['legacyId', 'externalUrl']);
         if (completeGallery) next = next.set({ gallery: content.gallery });
         return next;
       });

@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
+import { CurrencyInput } from '../components/CurrencyInput';
 import { slugify } from './slug';
 
 const count = (name: string, title: string) =>
@@ -41,20 +42,6 @@ export const property = defineType({
       validation: (r) => r.required(),
     }),
     defineField({
-      name: 'legacyId',
-      title: 'ID no site antigo',
-      description: 'Mantém o endereço antigo (/imovel/<id>/<slug>) funcionando. Em imóveis novos, deixe em branco e o código é usado.',
-      type: 'string',
-      group: 'main',
-    }),
-    defineField({
-      name: 'externalUrl',
-      title: 'Anúncio no site antigo',
-      description: 'Enquanto preenchido, o imóvel abre neste endereço em vez de ter página própria aqui. Apague quando o anúncio estiver completo.',
-      type: 'url',
-      group: 'main',
-    }),
-    defineField({
       name: 'type',
       title: 'Tipo',
       type: 'string',
@@ -78,10 +65,11 @@ export const property = defineType({
     }),
     defineField({
       name: 'price',
-      title: 'Valor (R$)',
-      description: 'Deixe em branco para exibir "Preço sob consulta".',
+      title: 'Valor',
+      description: 'Digite o valor em reais. Deixe em branco para exibir "Preço sob consulta".',
       type: 'number',
       group: 'main',
+      components: { input: CurrencyInput },
       validation: (r) => r.min(0),
     }),
     defineField({

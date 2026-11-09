@@ -18,7 +18,7 @@ export const CARD_PHOTOS = 5;
 const LIGHT_IMAGE_PROJECTION = /* groq */ `{ alt, crop, hotspot, asset->{ _id } }`;
 
 const SUMMARY_FIELDS = /* groq */ `
-  "id": coalesce(legacyId, code),
+  "id": code,
   code,
   "slug": slug.current,
   type,
@@ -32,7 +32,6 @@ const SUMMARY_FIELDS = /* groq */ `
   excerpt,
   condominium,
   address,
-  externalUrl,
   "city": coalesce(neighborhood->city, city),
   "neighborhood": coalesce(neighborhood->name, ""),
   "state": neighborhood->state,
@@ -56,7 +55,6 @@ type RawSummary = {
   excerpt: string | null;
   condominium: string | null;
   address: string | null;
-  externalUrl: string | null;
   city: string;
   neighborhood: string;
   state: string | null;
@@ -98,8 +96,7 @@ function toSummary(raw: RawSummary): PropertySummary {
     excerpt: raw.excerpt ?? '',
     condominium: optional(raw.condominium),
     address: optional(raw.address),
-    // Listings that are not complete here yet keep pointing at their page on the live site.
-    href: raw.externalUrl ?? `/imovel/${raw.id}/${raw.slug}`,
+    href: `/imovel/${raw.id}/${raw.slug}`,
   };
 }
 
@@ -159,10 +156,9 @@ export const getSiteSettings = cache(async () => {
   return settings;
 });
 
-/** Listings with their own page here: the ones without a link to the live site. */
 export const getPropertyDetailParams = cache(async () =>
   sanityFetch<{ id: string; slug: string }[]>(
-    `*[${LISTED} && !defined(externalUrl)] { "id": coalesce(legacyId, code), "slug": slug.current }`,
+    `*[${LISTED}] { "id": code, "slug": slug.current }`,
     {},
     { published: true },
   ),
@@ -187,7 +183,7 @@ type RawDetail = RawSummary & {
 
 export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetail | null> => {
   const raw = await sanityFetch<RawDetail | null>(
-    `*[${LISTED} && !defined(externalUrl) && coalesce(legacyId, code) == $id][0] {
+    `*[${LISTED} && code == $id][0] {
       ${SUMMARY_FIELDS},
       title,
       summary,
@@ -280,7 +276,7 @@ export const getPage = cache(async (slug: string) => {
 /** Everything the sitemap lists, with last-modified dates from Sanity. */
 export const getSitemapEntries = cache(async () =>
   sanityFetch<{ properties: { href: string; updatedAt: string }[]; pages: { slug: string; updatedAt: string }[] }>(`{
-    "properties": *[${LISTED}] { "href": coalesce(externalUrl, "/imovel/" + coalesce(legacyId, code) + "/" + slug.current), "updatedAt": _updatedAt },
+    "properties": *[${LISTED}] { "href": "/imovel/" + code + "/" + slug.current, "updatedAt": _updatedAt },
     "pages": *[_type == "page" && defined(slug.current)] { "slug": slug.current, "updatedAt": _updatedAt }
   }`, {}, { published: true }),
 );
