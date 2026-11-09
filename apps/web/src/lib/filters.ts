@@ -169,7 +169,7 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
     // A neighborhood saved without a city has no place in the location list.
     if (property.city) {
       const neighborhoods = cities.get(property.city) ?? new Set<string>();
-      neighborhoods.add(property.neighborhood);
+      if (property.neighborhood) neighborhoods.add(property.neighborhood);
       cities.set(property.city, neighborhoods);
     }
     mostBedrooms = Math.max(mostBedrooms, property.bedrooms ?? 0);

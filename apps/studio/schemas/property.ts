@@ -76,7 +76,23 @@ export const property = defineType({
       group: 'main',
       validation: (r) => r.min(0),
     }),
-    defineField({ name: 'neighborhood', title: 'Bairro', type: 'reference', group: 'main', to: [{ type: 'neighborhood' }], validation: (r) => r.required() }),
+    defineField({
+      name: 'neighborhood',
+      title: 'Bairro',
+      description: 'Deixe em branco só quando o imóvel não tiver um bairro definido, e preencha a cidade abaixo.',
+      type: 'reference',
+      group: 'main',
+      to: [{ type: 'neighborhood' }],
+      validation: (r) => r.custom((value, context) => (value || (context.document as { city?: string } | undefined)?.city ? true : 'Informe o bairro ou a cidade.')),
+    }),
+    defineField({
+      name: 'city',
+      title: 'Cidade (sem bairro)',
+      description: 'Usada apenas quando o imóvel não tem bairro.',
+      type: 'string',
+      group: 'main',
+      hidden: ({ document }) => Boolean(document?.neighborhood),
+    }),
     defineField({ name: 'address', title: 'Endereço', type: 'string', group: 'main' }),
     defineField({
       name: 'cep',
@@ -166,7 +182,7 @@ export const property = defineType({
   ],
   orderings: [{ title: 'Mais recentes', name: 'codeDesc', by: [{ field: 'code', direction: 'desc' }] }],
   preview: {
-    select: { type: 'type', neighborhood: 'neighborhood.name', code: 'code', media: 'coverImage' },
-    prepare: ({ type, neighborhood, code, media }) => ({ title: `${type ?? 'Imóvel'} em ${neighborhood ?? '—'}`, subtitle: `Cód. ${code}`, media }),
+    select: { type: 'type', neighborhood: 'neighborhood.name', city: 'city', code: 'code', media: 'coverImage' },
+    prepare: ({ type, neighborhood, city, code, media }) => ({ title: `${type ?? 'Imóvel'} em ${neighborhood ?? city ?? '—'}`, subtitle: `Cód. ${code}`, media }),
   },
 });

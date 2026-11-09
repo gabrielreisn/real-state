@@ -10,7 +10,7 @@ export type * from './types';
 
 export const SITE_URL = process.env.SITE_URL ?? 'https://www.alexnolasco.com.br';
 
-const LISTED = /* groq */ `_type == "property" && defined(slug.current) && defined(coverImage.asset) && defined(neighborhood)`;
+const LISTED = /* groq */ `_type == "property" && defined(slug.current) && defined(coverImage.asset) && (defined(neighborhood) || defined(city))`;
 
 /** Photos in each card's carousel. The rest are on the listing page. */
 export const CARD_PHOTOS = 5;
@@ -33,8 +33,8 @@ const SUMMARY_FIELDS = /* groq */ `
   condominium,
   address,
   externalUrl,
-  "city": neighborhood->city,
-  "neighborhood": neighborhood->name,
+  "city": coalesce(neighborhood->city, city),
+  "neighborhood": coalesce(neighborhood->name, ""),
   "state": neighborhood->state,
   "image": coverImage ${IMAGE_PROJECTION},
   "photos": gallery[0...${CARD_PHOTOS + 1}] ${LIGHT_IMAGE_PROJECTION},
@@ -113,7 +113,7 @@ export const getProperties = cache(async () =>
 /** What the site-wide structured data needs: a small query, so pages that list no properties don't fetch them all. */
 export const getListingStats = cache(async () => {
   const stats = await sanityFetch<{ cities: (string | null)[]; minPrice: number | null; maxPrice: number | null }>(`{
-    "cities": array::unique(*[${LISTED}].neighborhood->city),
+    "cities": array::unique(*[${LISTED}]{ "city": coalesce(neighborhood->city, city) }.city),
     "minPrice": math::min(*[${LISTED} && price > 0].price),
     "maxPrice": math::max(*[${LISTED} && price > 0].price)
   }`);

@@ -12,7 +12,7 @@ import { TrackView } from '@/components/property/TrackView';
 import { PropertyLink } from '@/components/PropertyLink';
 import { JsonLd } from '@/components/JsonLd';
 import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, SITE_URL } from '@/content';
-import { formatPrice } from '@/lib/format';
+import { formatPrice, placeName } from '@/lib/format';
 import { listingsHref } from '@/lib/listings-url';
 import { propertyGraph } from '@/lib/seo/jsonld';
 import { openGraphDefaults } from '@/lib/seo/metadata';
@@ -36,7 +36,7 @@ async function loadProperty(params: Params) {
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const property = await loadProperty(params);
   const description = [`${property.title}, ${property.summary}`, formatPrice(property.price), `Código ${property.code}.`].join('. ').replace(/\.\./g, '.');
-  const title = `${property.type} em ${property.neighborhood}, ${property.city}`;
+  const title = `${property.type} em ${placeName(property)}`;
   return {
     title: `${title} – ${formatPrice(property.price)}`,
     description,
@@ -99,7 +99,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
   const facts: [string, string | number | undefined][] = [
     ['Código', property.code],
     ['Endereço', property.address || undefined],
-    ['Bairro', property.neighborhood],
+    ['Bairro', property.neighborhood || undefined],
     ['Condomínio', property.condominium || undefined],
     ['Condomínio (mensal)', property.condoFee !== undefined ? currency(property.condoFee) : undefined],
     ['IPTU', property.iptu !== undefined ? currency(property.iptu) : undefined],
@@ -118,7 +118,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
     { label: 'Venda', href: listingsHref({}) },
     { label: property.type, href: listingsHref({ tipo: property.type }) },
     { label: property.city, href: listingsHref({ cidade: property.city }) },
-    { label: property.neighborhood, href: listingsHref({ cidade: property.city, bairro: property.neighborhood }) },
+    ...(property.neighborhood ? [{ label: property.neighborhood, href: listingsHref({ cidade: property.city, bairro: property.neighborhood }) }] : []),
   ];
 
   return (
@@ -297,7 +297,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
       <section aria-labelledby="similares-titulo" className="bg-mist py-12">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <h2 id="similares-titulo" className="text-2xl font-bold">
-            Imóveis em {property.neighborhood}, {property.city}
+            Imóveis em {placeName(property)}
           </h2>
           <ul className="mt-6 grid gap-6 md:grid-cols-3">
             {property.similar.map((listing) => (

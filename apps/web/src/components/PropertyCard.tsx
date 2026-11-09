@@ -1,3 +1,4 @@
+import { placeName } from '@/lib/format';
 import type { PropertySummary } from '@/content/types';
 import { formatPrice } from '@/lib/format';
 import { CardGallery } from './CardGallery';
@@ -9,7 +10,7 @@ import { PropertyLink } from './PropertyLink';
  * row end at the same place whatever the listing has filled in.
  */
 export function PropertyCard({ property }: { property: PropertySummary }) {
-  const place = `${property.neighborhood}, ${property.city}`;
+  const place = placeName(property);
   return (
     <article className="reveal group relative flex h-full flex-col rounded-md has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-brand">
       <CardGallery photos={property.photos} total={property.photoCount} href={property.href} />

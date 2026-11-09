@@ -90,6 +90,11 @@ describe('search URL', () => {
 });
 
 describe('searchOptions', () => {
+  it('offers no neighborhood for a listing that only has a city', () => {
+    const options = searchOptions([{ ...properties[0], city: 'Vitória', neighborhood: '' }]);
+    expect(options.cities).toEqual([{ name: 'Vitória', neighborhoods: [] }]);
+  });
+
   it('lists cities by demand, then any others by name, and skips a blank city', () => {
     const at = (city: string) => ({ ...properties[0], city });
     const names = searchOptions(['Fundão', 'Serra', '', 'Linhares', 'Aracruz', 'Vitória'].map(at)).cities.map((city) => city.name);

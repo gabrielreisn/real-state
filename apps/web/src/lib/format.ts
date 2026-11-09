@@ -13,3 +13,6 @@ export function formatPriceShort(value: number) {
 }
 
 export const plural = (count: number, singular: string, pluralForm: string) => (count === 1 ? singular : pluralForm);
+
+/** "Jardim Camburi, Vitória", or only the city for a listing without a neighborhood. */
+export const placeName = ({ neighborhood, city }: { neighborhood: string; city: string }) => [neighborhood, city].filter(Boolean).join(', ');

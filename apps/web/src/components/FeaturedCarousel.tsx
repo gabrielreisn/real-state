@@ -71,7 +71,7 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
                 <div className="md:col-span-5">
                   <h3 className="text-2xl leading-tight font-bold tracking-tight transition-colors duration-200 group-hover:text-brand md:text-[2rem]">
                     <PropertyLink href={property.href} className="after:absolute after:inset-0 focus-visible:outline-none">
-                      {property.type} em {property.neighborhood}
+                      {property.type} em {property.neighborhood || property.city}
                     </PropertyLink>
                   </h3>
                   <p className="mt-1 text-slate">

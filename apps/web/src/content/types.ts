@@ -7,6 +7,7 @@ export type PropertySummary = {
   type: string;
   purpose: 'Venda';
   city: string;
+  /** Empty for a listing that only has a city. */
   neighborhood: string;
   state: string;
   /** Null means the price is only given on request. */

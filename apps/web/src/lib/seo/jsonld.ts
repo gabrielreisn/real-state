@@ -2,6 +2,7 @@
  * schema.org structured data. Every page carries the site-wide graph (the business, Alex and the
  * website, linked by @id) and adds its own nodes that point back to it.
  */
+import { placeName } from '@/lib/format';
 import type { Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from '@/content/types';
 import { formatPriceShort } from '@/lib/format';
 
@@ -138,7 +139,7 @@ function listItems(siteUrl: string, properties: PropertySummary[], offset = 0) {
     '@type': 'ListItem',
     position: offset + index + 1,
     url: absolute(siteUrl, property.href),
-    name: `${property.type} em ${property.neighborhood}, ${property.city}`,
+    name: `${property.type} em ${placeName(property)}`,
     image: property.image.src,
   }));
 }
@@ -170,7 +171,7 @@ export function propertyGraph({
   const place: Node = {
     '@type': type,
     '@id': `${url}#imovel`,
-    name: `${property.type} em ${property.neighborhood}, ${property.city}`,
+    name: `${property.type} em ${placeName(property)}`,
     description,
     image: images,
     address: {
@@ -182,7 +183,7 @@ export function propertyGraph({
     },
     containedInPlace: {
       '@type': 'Place',
-      name: `${property.neighborhood}, ${property.city} - ${property.state}`,
+      name: `${placeName(property)} - ${property.state}`,
       address: { '@type': 'PostalAddress', addressLocality: property.city, addressRegion: property.state, addressCountry: 'BR' },
     },
     ...(isAccommodation
@@ -212,7 +213,7 @@ export function propertyGraph({
     '@type': 'RealEstateListing',
     '@id': `${url}#anuncio`,
     url,
-    name: `${property.title}, ${property.neighborhood}`,
+    name: `${property.title}, ${property.neighborhood || property.city}`,
     description,
     image: images,
     inLanguage: 'pt-BR',

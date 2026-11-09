@@ -1,5 +1,5 @@
 import type { PropertySummary } from '@/content/types';
-import { plural } from './format';
+import { placeName, plural } from './format';
 import { listingsHref } from './listings-url';
 import { createSearcher, matchAll, matchCode, matchGroup, normalize, queryWords, type SearchFields, words } from './property-search';
 
@@ -25,7 +25,7 @@ export const suggestionListing = ({ code, href, type, city, neighborhood, condom
 type Candidate = Suggestion & { order: number; targets: string[]; count: number };
 
 const countLabel = (count: number) => `${count} ${plural(count, 'imóvel', 'imóveis')}`;
-const describe = ({ type, neighborhood, city }: SuggestionListing) => `${type} em ${neighborhood}, ${city}`;
+const describe = (listing: SuggestionListing) => `${listing.type} em ${placeName(listing)}`;
 
 /** One suggestion per distinct name. A name with a single listing opens it; several open the search for that name. */
 function namedGroups(listings: SuggestionListing[], kind: string, order: number, nameOf: (listing: SuggestionListing) => string | undefined): Candidate[] {
@@ -44,7 +44,7 @@ function namedGroups(listings: SuggestionListing[], kind: string, order: number,
     label,
     targets: words(label),
     count: members.length,
-    detail: members.length === 1 ? describe(members[0]) : `${countLabel(members.length)} em ${members[0].neighborhood}, ${members[0].city}`,
+    detail: members.length === 1 ? describe(members[0]) : `${countLabel(members.length)} em ${placeName(members[0])}`,
     href: members.length === 1 ? members[0].href : listingsHref({ busca: label }),
   }));
 }
@@ -76,7 +76,7 @@ export function createSuggester(listings: SuggestionListing[]) {
   const places = [
     ...namedGroups(listings, 'Condomínio', 1, (listing) => listing.condominium),
     ...namedGroups(listings, 'Endereço', 2, (listing) => listing.address),
-    ...countedPlaces(listings, 'Bairro', 3, (listing) => `${listing.city}|${listing.neighborhood}`, ({ city, neighborhood }) => ({
+    ...countedPlaces(listings.filter((listing) => listing.neighborhood), 'Bairro', 3, (listing) => `${listing.city}|${listing.neighborhood}`, ({ city, neighborhood }) => ({
       label: neighborhood,
       where: city,
       href: listingsHref({ cidade: city, bairro: neighborhood }),
