@@ -163,6 +163,7 @@ type RawDetail = RawSummary & {
   title: string | null;
   summary: string | null;
   address: string | null;
+  cep: string | null;
   condominium: string | null;
   builtArea: number | null;
   landArea: number | null;
@@ -184,6 +185,7 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
       title,
       summary,
       address,
+      cep,
       condominium,
       builtArea,
       landArea,
@@ -216,6 +218,7 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
     title: raw.title ?? `${summary.type} para ${summary.purpose}, ${summary.city} / ${summary.state}`,
     summary: raw.summary ?? '',
     address: raw.address ?? '',
+    cep: raw.cep ?? '',
     condominium: raw.condominium ?? '',
     // The summary's area falls back to the land area; the detail page shows them separately.
     area: optional(raw.rawArea),

@@ -7,6 +7,7 @@ import type { IconType } from 'react-icons';
 import { FaArrowsLeftRight, FaBath, FaBed, FaCar, FaCheck, FaChevronRight, FaShower } from 'react-icons/fa6';
 import { Gallery } from '@/components/property/Gallery';
 import { LeadForm } from '@/components/property/LeadForm';
+import { PropertyMap } from '@/components/property/PropertyMap';
 import { PropertyLink } from '@/components/PropertyLink';
 import { JsonLd } from '@/components/JsonLd';
 import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, SITE_URL } from '@/content';
@@ -240,6 +241,8 @@ export default async function PropertyPage({ params }: { params: Params }) {
               </div>
             </section>
             ) : null}
+
+            <PropertyMap property={property} />
           </div>
 
           <aside className="space-y-6 lg:sticky lg:top-[calc(var(--header-offset)+1rem)] lg:self-start">

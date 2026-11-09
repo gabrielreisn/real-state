@@ -32,6 +32,7 @@ export type PropertyDetail = PropertySummary & {
   title: string;
   summary: string;
   address: string;
+  cep: string;
   condominium: string;
   builtArea?: number;
   landArea?: number;
