@@ -62,6 +62,7 @@ services:
         SANITY_PROJECT_ID: ${SANITY_PROJECT_ID:-1ai1aq1e}
         SANITY_DATASET: ${SANITY_DATASET:-development}
         SITE_URL: ${SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID-G-754VY12EFX}
     restart: unless-stopped
     environment:
       API_INTERNAL_URL: http://api:4000

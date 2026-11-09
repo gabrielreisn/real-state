@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers';
 import { VisualEditing } from 'next-sanity/visual-editing';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/Footer';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { Header } from '@/components/Header';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { JsonLd } from '@/components/JsonLd';
@@ -60,6 +61,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Footer />
         <WhatsAppButton />
         <JsonLd data={graph} />
+        {!preview && <GoogleAnalytics />}
         {/* Refreshes cached content when it changes in Sanity; in preview mode, on every draft edit. */}
         <SanityLive />
         {preview ? (

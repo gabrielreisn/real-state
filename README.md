@@ -33,6 +33,14 @@ pnpm dev                   # web, API and Studio with hot reload
 
 Run `pnpm test`, `pnpm typecheck` and `pnpm lint` before pushing.
 
+## Google Analytics
+
+The site uses GA4 measurement ID `G-754VY12EFX` by default. To override it, set `NEXT_PUBLIC_GA_MEASUREMENT_ID` in the production deployment's build environment, then rebuild and deploy. On Vercel, set it for **Production**. For Docker Compose, set it in the root `.env` before building; direct Docker builds accept `--build-arg NEXT_PUBLIC_GA_MEASUREMENT_ID=G-…`. Set the variable to an empty string to disable tracking.
+
+The tag loads after hydration on every page. Tracking is disabled when the ID is empty or invalid, during `next dev`, on Vercel preview deployments, and in Sanity Draft Mode.
+
+In the GA4 web stream, leave **Enhanced measurement → Page views → Page changes based on browser history events** enabled so navigation between pages is tracked. The site relies on [GA4's automatic pageviews](https://developers.google.com/analytics/devguides/collection/ga4/views) rather than sending duplicate events. After deploying, open the site, navigate to a property, and check that both pageviews appear in GA4 Realtime.
+
 ## How data flows
 
 - **Content** (listings, neighborhoods, contact details, featured listings) lives in Sanity. The web app reads it only through the functions in [apps/web/src/content/index.ts](apps/web/src/content/index.ts), Published edits reach the site within seconds: `<SanityLive />` listens for changes and revalidates only the cached queries they touch.
