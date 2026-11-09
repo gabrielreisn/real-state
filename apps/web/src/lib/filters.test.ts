@@ -90,10 +90,16 @@ describe('search URL', () => {
 });
 
 describe('searchOptions', () => {
+  it('lists cities by demand, then any others by name, and skips a blank city', () => {
+    const at = (city: string) => ({ ...properties[0], city });
+    const names = searchOptions(['Fundão', 'Serra', '', 'Linhares', 'Aracruz', 'Vitória'].map(at)).cities.map((city) => city.name);
+    expect(names).toEqual(['Vitória', 'Serra', 'Fundão', 'Aracruz', 'Linhares']);
+  });
+
   it('only offers choices that match at least one listing', () => {
     const options = searchOptions(properties);
     expect(options.types).toEqual(['Apartamento']);
-    expect(options.cities.map((city) => city.name)).toEqual(['Vila Velha', 'Vitória']);
+    expect(options.cities.map((city) => city.name)).toEqual(['Vitória', 'Vila Velha']);
     expect(options.bedrooms).toEqual([1, 2, 3, 4]);
     // The cheapest listing costs just over R$ 500 mil, so "up to R$ 500 mil" would always be empty.
     expect(options.priceCeilings[0]).toBe(750_000);

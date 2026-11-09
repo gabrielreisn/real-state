@@ -27,6 +27,13 @@ export const SORT_ORDERS: { value: SortOrder; label: string }[] = [
 
 export const DEFAULT_SORT: SortOrder = 'recentes';
 
+// Where buyers look most, not alphabetical. Any other city follows these, in name order.
+const CITY_ORDER = ['Vitória', 'Vila Velha', 'Serra', 'Guarapari', 'Fundão', 'Domingos Martins'];
+const cityRank = (city: string) => {
+  const rank = CITY_ORDER.indexOf(city);
+  return rank === -1 ? CITY_ORDER.length : rank;
+};
+
 const PRICE_CEILINGS = [500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000, 5_000_000];
 const BEDROOM_MINIMUMS = [1, 2, 3, 4];
 
@@ -159,9 +166,12 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
 
   for (const property of properties) {
     types.add(property.type);
-    const neighborhoods = cities.get(property.city) ?? new Set<string>();
-    neighborhoods.add(property.neighborhood);
-    cities.set(property.city, neighborhoods);
+    // A neighborhood saved without a city has no place in the location list.
+    if (property.city) {
+      const neighborhoods = cities.get(property.city) ?? new Set<string>();
+      neighborhoods.add(property.neighborhood);
+      cities.set(property.city, neighborhoods);
+    }
     mostBedrooms = Math.max(mostBedrooms, property.bedrooms ?? 0);
     if (property.price !== null) lowestPrice = Math.min(lowestPrice, property.price);
   }
@@ -170,7 +180,7 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
     types: [...types].sort(byName),
     cities: [...cities]
       .map(([name, neighborhoods]) => ({ name, neighborhoods: [...neighborhoods].sort(byName) }))
-      .sort((a, b) => byName(a.name, b.name)),
+      .sort((a, b) => cityRank(a.name) - cityRank(b.name) || byName(a.name, b.name)),
     bedrooms: BEDROOM_MINIMUMS.filter((minimum) => minimum <= mostBedrooms),
     priceCeilings: PRICE_CEILINGS.filter((ceiling) => ceiling >= lowestPrice),
   };

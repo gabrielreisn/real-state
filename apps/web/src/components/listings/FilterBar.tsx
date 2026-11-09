@@ -44,10 +44,10 @@ export function FilterBar({ options, filters, sort }: { options: SearchOptions; 
   const locations: SelectGroup[] = [
     { options: [{ value: '', label: 'Toda a Grande Vitória' }] },
     ...options.cities.map((city) => ({
-      label: city.name,
+      name: city.name,
       options: [
-        { value: `c|${city.name}`, label: `${city.name}, todos os bairros` },
-        ...city.neighborhoods.map((neighborhood) => ({ value: `b|${city.name}|${neighborhood}`, label: neighborhood })),
+        { value: `c|${city.name}`, label: city.name, parent: true },
+        ...city.neighborhoods.map((neighborhood) => ({ value: `b|${city.name}|${neighborhood}`, label: neighborhood, nested: true })),
       ],
     })),
   ];

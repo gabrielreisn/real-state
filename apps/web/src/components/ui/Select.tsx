@@ -6,8 +6,9 @@ import { createPortal } from 'react-dom';
 import { FaCheck, FaChevronDown } from 'react-icons/fa6';
 import { normalize } from '@/lib/property-search';
 
-export type SelectOption = { value: string; label: string };
-export type SelectGroup = { label?: string; options: SelectOption[] };
+export type SelectOption = { value: string; label: string; /** A parent in a tree, like a city over its neighborhoods. */ parent?: boolean; /** A child in a tree. */ nested?: boolean };
+/** `label` is a visible heading; `name` only names the group for screen readers. */
+export type SelectGroup = { label?: string; name?: string; options: SelectOption[] };
 
 type SelectProps = {
   id?: string;
@@ -163,7 +164,7 @@ export function Select({ id, name, groups, value, defaultValue = '', onChange, p
             >
               <div id={listId} role="listbox" className="max-h-80 overflow-y-auto overscroll-contain p-1.5">
                 {groups.map((group, groupIndex) => (
-                  <div key={group.label ?? groupIndex} role="group" aria-label={group.label}>
+                  <div key={group.label ?? group.name ?? groupIndex} role="group" aria-label={group.label ?? group.name} className={clsx(group.name && groupIndex > 0 && 'mt-1 border-t border-line pt-1')}>
                     {group.label ? <div className="px-3 pt-2.5 pb-1 text-xs font-semibold tracking-wide text-slate uppercase">{group.label}</div> : null}
                     {group.options.map((option) => {
                       const optionIndex = options.indexOf(option);
@@ -176,7 +177,7 @@ export function Select({ id, name, groups, value, defaultValue = '', onChange, p
                           aria-selected={isSelected}
                           onClick={() => choose(optionIndex)}
                           onMouseEnter={() => setActive(optionIndex)}
-                          className={clsx('flex cursor-pointer items-center justify-between gap-6 rounded-lg px-3 py-2 whitespace-nowrap', optionIndex === active && 'bg-mist', isSelected && 'font-semibold')}
+                          className={clsx('flex cursor-pointer items-center justify-between gap-6 rounded-lg px-3 py-2 whitespace-nowrap', optionIndex === active && 'bg-mist', isSelected && 'font-semibold', option.parent && 'font-bold', option.nested && 'pl-7')}
                         >
                           {option.label}
                           {isSelected ? <FaCheck aria-hidden className="shrink-0 text-xs text-brand" /> : null}
