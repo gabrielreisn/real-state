@@ -1,10 +1,11 @@
 'use client';
 
 import clsx from 'clsx';
-import { type KeyboardEvent, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FaCheck, FaChevronDown } from 'react-icons/fa6';
 import { normalize } from '@/lib/property-search';
+import { useAnchoredPosition } from './useAnchoredPosition';
 
 export type SelectOption = { value: string; label: string; /** A parent in a tree, like a city over its neighborhoods. */ parent?: boolean; /** A child in a tree. */ nested?: boolean };
 /** `label` is a visible heading; `name` only names the group for screen readers. */
@@ -24,9 +25,6 @@ type SelectProps = {
   'aria-current'?: boolean;
 };
 
-const GAP = 6;
-const EDGE = 8;
-
 /**
  * A dropdown with the WAI-ARIA select-only combobox keyboard behavior. The list is portaled to
  * the body so scrolling or blurred ancestors, like the filter bar, cannot clip it.
@@ -40,32 +38,12 @@ export function Select({ id, name, groups, value, defaultValue = '', onChange, p
   const [internal, setInternal] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const [position, setPosition] = useState<{ left: number; top: number; minWidth: number } | null>(null);
+  const position = useAnchoredPosition(open, trigger, panel);
 
   const selectedValue = value ?? internal;
   const options = useMemo(() => groups.flatMap((group) => group.options), [groups]);
   const selected = options.find((option) => option.value === selectedValue);
   const optionId = (index: number) => `${baseId}-opcao-${index}`;
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    const place = () => {
-      if (!trigger.current || !panel.current) return;
-      const anchor = trigger.current.getBoundingClientRect();
-      const { offsetWidth: width, offsetHeight: height } = panel.current;
-      const fitsBelow = anchor.bottom + GAP + height <= window.innerHeight - EDGE;
-      const top = fitsBelow || anchor.top < height + GAP ? anchor.bottom + GAP : anchor.top - GAP - height;
-      const left = Math.max(EDGE, Math.min(anchor.left, document.documentElement.clientWidth - width - EDGE));
-      setPosition({ left, top, minWidth: anchor.width });
-    };
-    place();
-    window.addEventListener('scroll', place, { capture: true, passive: true });
-    window.addEventListener('resize', place);
-    return () => {
-      window.removeEventListener('scroll', place, { capture: true });
-      window.removeEventListener('resize', place);
-    };
-  }, [open]);
 
   useEffect(() => {
     if (open) document.getElementById(optionId(active))?.scrollIntoView({ block: 'nearest' });
@@ -75,7 +53,6 @@ export function Select({ id, name, groups, value, defaultValue = '', onChange, p
 
   function show() {
     setActive(Math.max(0, options.findIndex((option) => option.value === selectedValue)));
-    setPosition(null);
     setOpen(true);
   }
 

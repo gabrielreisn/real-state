@@ -9,7 +9,7 @@ import { StickyFilters } from '@/components/listings/StickyFilters';
 import { PropertyCard } from '@/components/PropertyCard';
 import { JsonLd } from '@/components/JsonLd';
 import { getProperties, getSiteSettings, SITE_URL, whatsappLink } from '@/content';
-import { filterChips, filterProperties, parseFilters, parseSort, removeFilter, searchOptions, sortProperties } from '@/lib/filters';
+import { countRow, filterChips, filterProperties, isCombinedSearch, parseFilters, parseSort, removeFilter, searchOptions, sortProperties } from '@/lib/filters';
 import { listingsHeading, listingsHref, PAGE_SIZE, parsePage, resolveLocation } from '@/lib/listings-url';
 import { listingsGraph } from '@/lib/seo/jsonld';
 import { openGraphDefaults } from '@/lib/seo/metadata';
@@ -34,11 +34,11 @@ async function loadSearch({ segments, searchParams }: ListingsProps) {
 
   const fromQuery = parseFilters(query);
   // Location in the query (old links, or the filter form without JavaScript) moves into the path.
-  if (query.local !== undefined || query.cidade !== undefined || query.bairro !== undefined) {
+  if (!fromQuery.locais && (query.local !== undefined || query.cidade !== undefined || query.bairro !== undefined)) {
     permanentRedirect(listingsHref(fromQuery, parseSort(query), parsePage(query.pagina)));
   }
 
-  const filters = { ...fromQuery, cidade: location.cidade, bairro: location.bairro };
+  const filters = fromQuery.locais ? fromQuery : { ...fromQuery, cidade: location.cidade, bairro: location.bairro };
   const sort = parseSort(query);
   const page = parsePage(query.pagina);
   const results = sortProperties(filterProperties(properties, filters), sort);
@@ -57,7 +57,7 @@ export async function listingsMetadata(props: ListingsProps): Promise<Metadata> 
     description,
     alternates: { canonical: listingsHref(filters, sort, page) },
     // Free text makes endless near-duplicate pages; cities and neighborhoods have their own indexable ones.
-    robots: filters.busca ? { index: false, follow: true } : undefined,
+    robots: isCombinedSearch(filters) ? { index: false, follow: true } : undefined,
     // The newest listing's photo; searches without results fall back to the site card.
     openGraph: {
       ...openGraphDefaults,
@@ -111,7 +111,7 @@ export async function ListingsPage(props: ListingsProps) {
 
       <StickyFilters>
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <FilterBar options={options} filters={filters} sort={sort} />
+          <FilterBar options={options} filters={filters} sort={sort} listings={filterProperties(properties, { busca: filters.busca }).map(countRow)} />
         </div>
       </StickyFilters>
 
@@ -120,9 +120,9 @@ export async function ListingsPage(props: ListingsProps) {
           <div className="mb-8 flex flex-wrap items-center gap-2">
             <ul className="flex flex-wrap gap-2" aria-label="Filtros ativos">
               {chips.map((chip) => (
-                <li key={chip.key}>
+                <li key={`${chip.key}-${chip.value ?? ''}`}>
                   <Link
-                    href={listingsHref(removeFilter(filters, chip.key), sort)}
+                    href={listingsHref(removeFilter(filters, chip.key, chip.value), sort)}
                     aria-label={`Remover filtro: ${chip.label}`}
                     className="inline-flex items-center gap-2 rounded-full border border-navy/25 bg-mist py-1.5 pr-3 pl-4 transition-colors duration-150 hover:border-navy"
                   >

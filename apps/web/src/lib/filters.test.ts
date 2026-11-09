@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { properties } from '@/test/properties';
 import {
+  bedroomsSummary,
   filterChips,
+  isCombinedSearch,
+  toggleLocation,
+  withLocations,
+  withTypes,
   filterProperties,
-  filtersToSearch,
   hasActiveFilters,
   parseFilters,
   parseSort,
@@ -75,21 +79,14 @@ describe('sortProperties', () => {
   });
 });
 
-describe('search URL', () => {
-  it('round-trips filters and sort through the query string', () => {
-    const filters = parseFilters({ tipo: 'Apartamento', cidade: 'Vila Velha', bairro: 'Itapuã', dormitorios: '2+', valorMax: '1500000' });
-    const query = filtersToSearch(filters, 'menor-preco');
-    const params = Object.fromEntries(new URLSearchParams(query));
-    expect(parseFilters(params)).toEqual(filters);
-    expect(parseSort(params)).toBe('menor-preco');
-  });
-
-  it('leaves the default sort out of the URL', () => {
-    expect(filtersToSearch({}, 'recentes')).toBe('');
-  });
-});
-
 describe('searchOptions', () => {
+  it('reports the published price range, ignoring listings without a price', () => {
+    const options = searchOptions(properties);
+    expect(options.lowestPrice).toBe(500023);
+    expect(options.highestPrice).toBe(4690000);
+    expect(searchOptions([{ ...properties[0], price: null }]).lowestPrice).toBeUndefined();
+  });
+
   it('offers no neighborhood for a listing that only has a city', () => {
     const options = searchOptions([{ ...properties[0], city: 'Vitória', neighborhood: '' }]);
     expect(options.cities).toEqual([{ name: 'Vitória', neighborhoods: [] }]);
@@ -122,5 +119,46 @@ describe('filter chips', () => {
     expect(formatPriceShort(750_000)).toBe('R$ 750 mil');
     expect(formatPriceShort(1_000_000)).toBe('R$ 1 milhão');
     expect(formatPriceShort(2_000_000)).toBe('R$ 2 milhões');
+  });
+});
+
+describe('multiple choices', () => {
+  const codes = (params: Record<string, string | string[]>) => filterProperties(properties, parseFilters(params)).map(({ code }) => code);
+
+  it('matches any of several places, types and bedroom counts', () => {
+    expect(codes({ local: ['b|Vila Velha|Itapuã', 'b|Vitória|Praia do Canto'] })).toEqual(['1168', '1136']);
+    expect(codes({ local: ['c|Vitória', 'b|Vila Velha|Itapuã'] })).toEqual(['1168', '1152', '1136', '1115']);
+    expect(codes({ dormitorios: ['2', '4'], local: ['c|Vitória', 'c|Vila Velha'] })).toEqual(['1168', '1150', '1136', '1125']);
+  });
+
+  it('keeps a single choice in the fields that have their own page', () => {
+    expect(parseFilters({ local: 'c|Serra', tipo: 'Casa' })).toMatchObject({ cidade: 'Serra', tipo: 'Casa', locais: undefined, tipos: undefined });
+    expect(withLocations({}, ['b|Serra|Laranjeiras'])).toMatchObject({ cidade: 'Serra', bairro: 'Laranjeiras', locais: undefined });
+    expect(withTypes({ tipo: 'Casa' }, ['Casa', 'Sobrado'])).toMatchObject({ tipo: undefined, tipos: ['Casa', 'Sobrado'] });
+  });
+
+  it('a whole city and its neighborhoods replace each other', () => {
+    expect(toggleLocation(['b|Serra|A', 'b|Vitória|B'], 'c|Serra')).toEqual(['b|Vitória|B', 'c|Serra']);
+    expect(toggleLocation(['c|Serra'], 'b|Serra|A')).toEqual(['b|Serra|A']);
+    expect(toggleLocation(['b|Serra|A', 'b|Serra|B'], 'b|Serra|A')).toEqual(['b|Serra|B']);
+  });
+
+  it('describes bedroom choices', () => {
+    expect(bedroomsSummary([3])).toBe('3 quartos');
+    expect(bedroomsSummary([2, 3])).toBe('2 e 3 quartos');
+    expect(bedroomsSummary([3, 4])).toBe('3 ou mais quartos');
+    expect(bedroomsSummary([1, 2, 4])).toBe('1, 2 e 4 ou mais quartos');
+  });
+
+  it('gives each selected value its own removable chip', () => {
+    const filters = parseFilters({ tipo: ['Casa', 'Sobrado'] });
+    const [first] = filterChips(filters);
+    expect(first).toMatchObject({ key: 'tipo', value: 'Casa', label: 'Casa' });
+    expect(removeFilter(filters, 'tipo', first.value)).toMatchObject({ tipo: 'Sobrado', tipos: undefined });
+  });
+
+  it('only combined searches stay out of search engines', () => {
+    expect(isCombinedSearch({ cidade: 'Serra', tipo: 'Casa', quartos: [3, 4] })).toBe(false);
+    expect(isCombinedSearch({ tipos: ['Casa', 'Sobrado'] })).toBe(true);
   });
 });

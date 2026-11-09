@@ -6,7 +6,7 @@ describe('listingsHref', () => {
   it('puts the location in the path and the rest in the query', () => {
     expect(listingsHref({})).toBe('/imoveis');
     expect(listingsHref({ cidade: 'Vila Velha' })).toBe('/imoveis/vila-velha');
-    expect(listingsHref({ cidade: 'Vila Velha', bairro: 'Itapuã', tipo: 'Apartamento', dormitorios: 2, dormitoriosOuMais: true })).toBe(
+    expect(listingsHref({ cidade: 'Vila Velha', bairro: 'Itapuã', tipo: 'Apartamento', quartos: [2, 3, 4] })).toBe(
       '/imoveis/vila-velha/itapua?tipo=Apartamento&dormitorios=2%2B',
     );
   });
@@ -61,5 +61,20 @@ describe('helpers', () => {
     expect(listingsHeading({ cidade: 'Vila Velha', bairro: 'Itapuã', tipo: 'Apartamento' }, 2)).toBe('2 apartamentos à venda em Itapuã, Vila Velha');
     expect(listingsHeading({ cidade: 'Serra' }, 1)).toBe('1 imóvel à venda em Serra');
     expect(listingsHeading({ tipo: 'Casa' })).toBe('Casas à venda em toda a Grande Vitória');
+  });
+});
+
+describe('combined searches', () => {
+  it('keeps several places out of the path', () => {
+    expect(listingsHref({ locais: ['c|Serra', 'b|Vitória|Praia do Canto'] })).toBe('/imoveis?local=c%7CSerra&local=b%7CVit%C3%B3ria%7CPraia+do+Canto');
+  });
+
+  it('repeats values for several types and bedrooms', () => {
+    expect(listingsHref({ tipos: ['Casa', 'Sobrado'], quartos: [2, 3] })).toBe('/imoveis?tipo=Casa&tipo=Sobrado&dormitorios=2&dormitorios=3');
+  });
+
+  it('names few places and counts many', () => {
+    expect(listingsHeading({ locais: ['c|Serra', 'b|Vitória|Praia do Canto'] }, 4)).toBe('4 imóveis à venda em Serra e Praia do Canto');
+    expect(listingsHeading({ locais: ['c|Serra', 'c|Vitória', 'c|Fundão'] }, 4)).toBe('4 imóveis à venda em 3 locais');
   });
 });

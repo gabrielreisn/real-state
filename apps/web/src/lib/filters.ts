@@ -7,13 +7,16 @@ export type PropertyFilters = {
   busca?: string;
   codigo?: string;
   tipo?: string;
+  /** Two or more types; a single one stays in `tipo`. */
+  tipos?: string[];
   cidade?: string;
   bairro?: string;
+  /** Two or more places, as "c|City" or "b|City|Neighborhood"; a single one stays in `cidade`/`bairro`, which have their own indexable pages. */
+  locais?: string[];
   valorMin?: number;
   valorMax?: number;
-  dormitorios?: number;
-  /** True for "N or more bedrooms", false for exactly N. */
-  dormitoriosOuMais?: boolean;
+  /** Bedroom counts to include; 4 stands for "4 or more". */
+  quartos?: number[];
 };
 
 export type SortOrder = 'recentes' | 'menor-preco' | 'maior-preco' | 'maior-area';
@@ -64,21 +67,83 @@ export function parseLocation(value: string | undefined): Pick<PropertyFilters, 
   return {};
 }
 
+const allTexts = (value: string | string[] | undefined) =>
+  [...new Set((Array.isArray(value) ? value : [value]).map((item) => item?.trim()).filter((item): item is string => Boolean(item)))];
+
+const MAX_BEDROOMS = 4;
+
+/** "3" is exactly three bedrooms and "3+" three or more, as in links from before multiple choices. */
+function parseBedrooms(value: string | string[] | undefined) {
+  const counts = new Set<number>();
+  for (const item of allTexts(value)) {
+    const match = item.match(/^(\d)(\+)?$/);
+    if (!match || match[1] === '0') continue;
+    const count = Math.min(Number(match[1]), MAX_BEDROOMS);
+    counts.add(count);
+    if (match[2]) for (let more = count + 1; more <= MAX_BEDROOMS; more++) counts.add(more);
+  }
+  return counts.size > 0 ? [...counts].sort((a, b) => a - b) : undefined;
+}
+
 export function parseFilters(params: RawParams): PropertyFilters {
-  const bedrooms = text(params.dormitorios)?.match(/^(\d)(\+)?$/);
-  const location = text(params.cidade) ? { cidade: text(params.cidade), bairro: text(params.bairro) } : parseLocation(text(params.local));
+  const places = allTexts(params.local).filter((value) => parseLocation(value).cidade);
+  const types = allTexts(params.tipo);
+  const location = text(params.cidade) ? { cidade: text(params.cidade), bairro: text(params.bairro) } : places.length === 1 ? parseLocation(places[0]) : {};
   return {
     busca: text(params.busca),
     codigo: text(params.codigo)?.replace(/^#/, ''),
-    tipo: text(params.tipo),
+    tipo: types.length === 1 ? types[0] : undefined,
+    tipos: types.length > 1 ? types : undefined,
     cidade: location.cidade,
-    bairro: location.bairro ?? (location.cidade ? undefined : text(params.bairro)),
+    bairro: location.bairro ?? (location.cidade || places.length > 1 ? undefined : text(params.bairro)),
+    locais: !location.cidade && places.length > 1 ? places : undefined,
     valorMin: positiveNumber(params.valorMin),
     valorMax: positiveNumber(params.valorMax),
-    dormitorios: bedrooms ? Number(bedrooms[1]) : undefined,
-    dormitoriosOuMais: bedrooms ? bedrooms[2] === '+' : undefined,
+    quartos: parseBedrooms(params.dormitorios),
   };
 }
+
+/** A run reaching the top ("3, 4") is "3 or more". */
+const bedroomsFrom = (counts: number[]) =>
+  counts.at(-1) === MAX_BEDROOMS && counts.every((count, index) => count === counts[0] + index) ? counts[0] : undefined;
+
+/** The URL values for a bedroom choice: one "N+" when possible, so older links and new ones agree. */
+export function bedroomParams(counts: number[] | undefined) {
+  if (!counts?.length) return [];
+  const from = bedroomsFrom(counts);
+  if (from !== undefined) return [`${from}+`];
+  return counts.map(String);
+}
+
+export const selectedLocations = (filters: PropertyFilters) => filters.locais ?? (filters.cidade ? [locationValue(filters)] : []);
+export const selectedTypes = (filters: PropertyFilters) => filters.tipos ?? (filters.tipo ? [filters.tipo] : []);
+
+export function withLocations(filters: PropertyFilters, places: string[]): PropertyFilters {
+  const base = { ...filters, cidade: undefined, bairro: undefined, locais: undefined };
+  if (places.length === 0) return base;
+  return places.length === 1 ? { ...base, ...parseLocation(places[0]) } : { ...base, locais: places };
+}
+
+export const withTypes = (filters: PropertyFilters, types: string[]): PropertyFilters => ({
+  ...filters,
+  tipo: types.length === 1 ? types[0] : undefined,
+  tipos: types.length > 1 ? types : undefined,
+});
+
+/** Choosing a whole city replaces its neighborhoods; choosing a neighborhood replaces its whole city. */
+export function toggleLocation(places: string[], value: string) {
+  if (places.includes(value)) return places.filter((place) => place !== value);
+  const { cidade, bairro } = parseLocation(value);
+  const kept = places.filter((place) => {
+    const other = parseLocation(place);
+    if (other.cidade !== cidade) return true;
+    return bairro ? Boolean(other.bairro) : false;
+  });
+  return [...kept, value];
+}
+
+/** Whether a search this specific should stay out of search engines. */
+export const isCombinedSearch = (filters: PropertyFilters) => Boolean(filters.busca || filters.locais || filters.tipos);
 
 export const parseSort = (params: RawParams): SortOrder => {
   const value = text(params.ordem);
@@ -87,44 +152,23 @@ export const parseSort = (params: RawParams): SortOrder => {
 
 export const hasActiveFilters = (filters: PropertyFilters) => Object.values(filters).some((value) => value !== undefined);
 
-/** The query string for a search, so every result list has a shareable URL. */
-export function filtersToSearch(filters: PropertyFilters, sort: SortOrder) {
-  const params = new URLSearchParams();
-  const entries: [string, string | number | undefined][] = [
-    ['tipo', filters.tipo],
-    ['cidade', filters.cidade],
-    ['bairro', filters.bairro],
-    ['dormitorios', filters.dormitorios === undefined ? undefined : `${filters.dormitorios}${filters.dormitoriosOuMais ? '+' : ''}`],
-    ['valorMin', filters.valorMin],
-    ['valorMax', filters.valorMax],
-    ['busca', filters.busca],
-    ['codigo', filters.codigo],
-    ['ordem', sort === DEFAULT_SORT ? undefined : sort],
-  ];
-  for (const [key, value] of entries) if (value !== undefined) params.set(key, String(value));
-  return params.toString();
-}
-
 export function filterProperties<T extends Searchable>(properties: T[], filters: PropertyFilters) {
   const found = filters.busca ? new Set(createSearcher(properties)(filters.busca)) : null;
+  const places = filters.locais?.map(parseLocation);
   return properties.filter((property) => {
     if (found && !found.has(property)) return false;
     if (filters.codigo && property.code !== filters.codigo) return false;
     if (filters.tipo && property.type !== filters.tipo) return false;
+    if (filters.tipos && !filters.tipos.includes(property.type)) return false;
     if (filters.cidade && property.city !== filters.cidade) return false;
     if (filters.bairro && property.neighborhood !== filters.bairro) return false;
+    if (places && !places.some(({ cidade, bairro }) => cidade === property.city && (!bairro || bairro === property.neighborhood))) return false;
 
     // Listings without a published price cannot match a price range.
     if (filters.valorMin !== undefined && (property.price === null || property.price < filters.valorMin)) return false;
     if (filters.valorMax !== undefined && (property.price === null || property.price > filters.valorMax)) return false;
 
-    if (filters.dormitorios !== undefined) {
-      if (property.bedrooms === undefined) return false;
-      const matches = filters.dormitoriosOuMais
-        ? property.bedrooms >= filters.dormitorios
-        : property.bedrooms === filters.dormitorios;
-      if (!matches) return false;
-    }
+    if (filters.quartos && (property.bedrooms === undefined || !filters.quartos.includes(Math.min(property.bedrooms, MAX_BEDROOMS)))) return false;
     return true;
   });
 }
@@ -154,6 +198,9 @@ export type SearchOptions = {
   cities: { name: string; neighborhoods: string[] }[];
   bedrooms: number[];
   priceCeilings: number[];
+  /** The cheapest and dearest published prices, or undefined when no listing has one. */
+  lowestPrice?: number;
+  highestPrice?: number;
 };
 
 /** Only offers choices that match at least one listing, so no option leads to an empty page. */
@@ -163,6 +210,7 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
   const cities = new Map<string, Set<string>>();
   let mostBedrooms = 0;
   let lowestPrice = Number.POSITIVE_INFINITY;
+  let highestPrice = 0;
 
   for (const property of properties) {
     types.add(property.type);
@@ -173,7 +221,10 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
       cities.set(property.city, neighborhoods);
     }
     mostBedrooms = Math.max(mostBedrooms, property.bedrooms ?? 0);
-    if (property.price !== null) lowestPrice = Math.min(lowestPrice, property.price);
+    if (property.price) {
+      lowestPrice = Math.min(lowestPrice, property.price);
+      highestPrice = Math.max(highestPrice, property.price);
+    }
   }
 
   return {
@@ -183,37 +234,55 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
       .sort((a, b) => cityRank(a.name) - cityRank(b.name) || byName(a.name, b.name)),
     bedrooms: BEDROOM_MINIMUMS.filter((minimum) => minimum <= mostBedrooms),
     priceCeilings: PRICE_CEILINGS.filter((ceiling) => ceiling >= lowestPrice),
+    lowestPrice: highestPrice > 0 ? lowestPrice : undefined,
+    highestPrice: highestPrice > 0 ? highestPrice : undefined,
   };
 }
 
 export const bedroomsLabel = (minimum: number) => `${minimum} ou mais ${plural(minimum, 'quarto', 'quartos')}`;
 
 export type FilterChipKey = 'busca' | 'codigo' | 'tipo' | 'local' | 'dormitorios' | 'valorMin' | 'valorMax';
-export type FilterChip = { key: FilterChipKey; label: string };
+export type FilterChip = { key: FilterChipKey; label: string; /** Which one of several selected values this chip removes. */ value?: string };
+
+/** "3 quartos", "2 e 3 quartos", "3 ou mais quartos", "1, 2 e 4 ou mais quartos". */
+export function bedroomsSummary(counts: number[]) {
+  const from = bedroomsFrom(counts);
+  if (from !== undefined) return bedroomsLabel(from);
+  const names = counts.map((count) => (count === MAX_BEDROOMS ? '4 ou mais' : String(count)));
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} e ${names.at(-1)}` : names[0];
+  return `${list} ${plural(counts.at(-1)!, 'quarto', 'quartos')}`;
+}
+
+const locationLabel = (place: string) => {
+  const { cidade, bairro } = parseLocation(place);
+  return [bairro, cidade].filter(Boolean).join(', ');
+};
 
 export function filterChips(filters: PropertyFilters): FilterChip[] {
+  const several = <T extends FilterChipKey>(key: T, values: string[] | undefined, label: (value: string) => string) => (values ?? []).map((value) => ({ key, value, label: label(value) }));
   const chips: (FilterChip | false)[] = [
     !!filters.busca && { key: 'busca', label: `“${filters.busca}”` },
     !!filters.codigo && { key: 'codigo', label: `Código ${filters.codigo}` },
     !!filters.tipo && { key: 'tipo', label: filters.tipo },
+    ...several('tipo', filters.tipos, (type) => type),
     !!(filters.bairro || filters.cidade) && {
       key: 'local',
       label: [filters.bairro, filters.cidade].filter(Boolean).join(', '),
     },
-    filters.dormitorios !== undefined && {
-      key: 'dormitorios',
-      label: filters.dormitoriosOuMais
-        ? bedroomsLabel(filters.dormitorios)
-        : `${filters.dormitorios} ${plural(filters.dormitorios, 'quarto', 'quartos')}`,
-    },
+    ...several('local', filters.locais, locationLabel),
+    !!filters.quartos?.length && { key: 'dormitorios', label: bedroomsSummary(filters.quartos) },
     filters.valorMin !== undefined && { key: 'valorMin', label: `A partir de ${formatPriceShort(filters.valorMin)}` },
     filters.valorMax !== undefined && { key: 'valorMax', label: `Até ${formatPriceShort(filters.valorMax)}` },
   ];
   return chips.filter((chip) => chip !== false);
 }
 
-export function removeFilter(filters: PropertyFilters, key: FilterChipKey): PropertyFilters {
-  if (key === 'local') return { ...filters, cidade: undefined, bairro: undefined };
-  if (key === 'dormitorios') return { ...filters, dormitorios: undefined, dormitoriosOuMais: undefined };
+export function removeFilter(filters: PropertyFilters, key: FilterChipKey, value?: string): PropertyFilters {
+  if (key === 'local') return withLocations(filters, value ? selectedLocations(filters).filter((place) => place !== value) : []);
+  if (key === 'tipo') return withTypes(filters, value ? selectedTypes(filters).filter((type) => type !== value) : []);
+  if (key === 'dormitorios') return { ...filters, quartos: undefined };
   return { ...filters, [key]: undefined };
 }
+
+/** The fields the live result count reads, so the browser gets no more than that. */
+export const countRow = ({ code, type, city, neighborhood, price, bedrooms, area }: Searchable): Searchable => ({ code, type, city, neighborhood, price, bedrooms, area });

@@ -12,7 +12,7 @@ import { PropertyLink } from './PropertyLink';
 export function PropertyCard({ property }: { property: PropertySummary }) {
   const place = placeName(property);
   return (
-    <article className="reveal group relative flex h-full flex-col rounded-md has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-brand">
+    <article className="reveal group relative flex h-full flex-col rounded-md has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-brand">
       <CardGallery photos={property.photos} total={property.photoCount} href={property.href} />
       <div className="flex flex-1 flex-col pt-4">
         {/* The full text is in the tooltip when a long name is cut short. */}

@@ -1,5 +1,5 @@
 import type { PropertySummary } from '@/content/types';
-import { DEFAULT_SORT, type PropertyFilters, type SortOrder } from './filters';
+import { bedroomParams, DEFAULT_SORT, parseLocation, type PropertyFilters, type SortOrder } from './filters';
 
 export const LISTINGS_PATH = '/imoveis';
 export const PAGE_SIZE = 24;
@@ -25,15 +25,17 @@ export function listingsHref(filters: PropertyFilters, sort: SortOrder = DEFAULT
   const params = new URLSearchParams();
   const entries: [string, string | number | undefined][] = [
     ['busca', filters.busca],
+    ...(filters.locais ?? []).map((place): [string, string] => ['local', place]),
     ['tipo', filters.tipo],
-    ['dormitorios', filters.dormitorios === undefined ? undefined : `${filters.dormitorios}${filters.dormitoriosOuMais ? '+' : ''}`],
+    ...(filters.tipos ?? []).map((type): [string, string] => ['tipo', type]),
+    ...bedroomParams(filters.quartos).map((value): [string, string] => ['dormitorios', value]),
     ['valorMin', filters.valorMin],
     ['valorMax', filters.valorMax],
     ['codigo', filters.codigo],
     ['ordem', sort === DEFAULT_SORT ? undefined : sort],
     ['pagina', page > 1 ? page : undefined],
   ];
-  for (const [key, value] of entries) if (value !== undefined) params.set(key, String(value));
+  for (const [key, value] of entries) if (value !== undefined) params.append(key, String(value));
   const query = params.toString();
   return `${segments.join('/')}${query ? `?${query}` : ''}`;
 }
@@ -67,10 +69,15 @@ export function pluralType(type: string) {
   return [plural, ...rest].join(' ');
 }
 
+function placesLabel(places: string[]) {
+  if (places.length > 2) return `${places.length} locais`;
+  return places.map((place) => parseLocation(place).bairro ?? parseLocation(place).cidade).join(' e ');
+}
+
 /** "59 apartamentos à venda em Praia da Costa, Vila Velha", used as the page heading and title. */
 export function listingsHeading(filters: PropertyFilters, count?: number) {
   const subject = filters.tipo ? pluralType(filters.tipo) : 'imóveis';
-  const place = filters.bairro && filters.cidade ? `${filters.bairro}, ${filters.cidade}` : (filters.cidade ?? 'toda a Grande Vitória');
+  const place = filters.locais ? placesLabel(filters.locais) : filters.bairro && filters.cidade ? `${filters.bairro}, ${filters.cidade}` : (filters.cidade ?? 'toda a Grande Vitória');
   const what = `${subject} à venda em ${place}`;
   if (count === undefined) return what.charAt(0).toUpperCase() + what.slice(1);
   return `${count} ${count === 1 && !filters.tipo ? 'imóvel' : subject} à venda em ${place}`;

@@ -81,7 +81,7 @@ export function HomeSearch({ listings }: { listings: SuggestionListing[] }) {
 
   return (
     <form action={LISTINGS_PATH} method="get" role="search" onSubmit={handleSubmit} className="relative max-w-3xl">
-      <div className="flex rounded-[15px] bg-white p-[3px] text-ink shadow-xl outline-offset-2 outline-brand has-[input:focus-visible]:outline-3">
+      <div className="flex rounded-[15px] bg-white p-[3px] text-ink shadow-xl outline-offset-2 outline-brand has-[input:focus-visible]:outline-2">
         <div className="relative min-w-0 flex-1">
           <FaMagnifyingGlass aria-hidden className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate" />
           <label htmlFor={id} className="sr-only">

@@ -39,7 +39,7 @@
 
   /* Dark sections set --focus to white so the ring stays visible. */
   :focus-visible {
-    outline: 3px solid var(--focus, var(--color-brand));
+    outline: 2px solid var(--focus, var(--color-brand));
     outline-offset: 2px;
   }
 

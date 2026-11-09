@@ -12,7 +12,7 @@ function Field({ label, suffix, value, onChange }: { label: string; suffix?: str
       <label htmlFor={id} className="block text-sm font-medium">
         {label}
       </label>
-      <div className="mt-1 flex items-center rounded-lg border border-line bg-white pr-3 outline-offset-2 outline-brand has-[input:focus-visible]:border-navy has-[input:focus-visible]:outline-3">
+      <div className="mt-1 flex items-center rounded-lg border border-line bg-white pr-3 outline-offset-2 outline-brand has-[input:focus-visible]:border-navy has-[input:focus-visible]:outline-2">
         <input
           id={id}
           type="number"

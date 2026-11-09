@@ -56,7 +56,7 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
               className="w-full shrink-0 snap-start"
             >
               {/* One link covers the whole slide, so the photo and every line of text open the listing. */}
-              <article className="group relative grid items-center gap-6 rounded-sm md:grid-cols-12 md:gap-12 has-[a:focus-visible]:outline-3 has-[a:focus-visible]:-outline-offset-3 has-[a:focus-visible]:outline-brand">
+              <article className="group relative grid items-center gap-6 rounded-sm md:grid-cols-12 md:gap-12 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-brand">
                 <div className="relative aspect-[3/2] overflow-hidden rounded-sm bg-white md:col-span-7">
                   <Image
                     src={property.image.src}
