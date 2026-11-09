@@ -1,4 +1,4 @@
-import { getMenuPages, getSiteSettings, legacy, phoneLink, whatsappLink } from '@/content';
+import { getMenuPages, getSiteSettings, phoneLink, whatsappLink } from '@/content';
 
 export async function Footer() {
   const [site, pages] = await Promise.all([getSiteSettings(), getMenuPages()]);
@@ -7,7 +7,6 @@ export async function Footer() {
     ...pages.map((page) => ({ label: page.title, href: `/${page.slug}` })),
     // The office map lives on the "A Empresa" page when it has one.
     ...(pages.some((page) => page.slug === 'sobre') ? [{ label: 'Mapa de Localização', href: '/sobre#mapa' }] : []),
-    { label: 'Política de Diversidade', href: legacy('/pagina/politica-de-diversidade') },
   ];
   return (
     <footer id="contato" className="bg-navy text-white [--focus:#fff]">
@@ -21,7 +20,7 @@ export async function Footer() {
             href={whatsappLink(site.whatsapp, 'Olá! Vim pelo site e gostaria de mais informações.')}
             target="_blank"
             rel="noreferrer"
-            className="mt-6 inline-block bg-brand px-5 py-3 font-semibold hover:bg-brand-dark"
+            className="mt-6 inline-block rounded-lg bg-brand px-5 py-3 font-semibold hover:bg-brand-dark"
           >
             Conversar no WhatsApp
           </a>

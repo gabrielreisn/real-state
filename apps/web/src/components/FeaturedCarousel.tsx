@@ -56,7 +56,7 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
               className="w-full shrink-0 snap-start"
             >
               {/* One link covers the whole slide, so the photo and every line of text open the listing. */}
-              <article className="group relative grid items-center gap-6 rounded-sm md:grid-cols-12 md:gap-12 has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-brand">
+              <article className="group relative grid items-center gap-6 rounded-sm md:grid-cols-12 md:gap-12 has-[a:focus-visible]:outline-3 has-[a:focus-visible]:-outline-offset-3 has-[a:focus-visible]:outline-brand">
                 <div className="relative aspect-[3/2] overflow-hidden rounded-sm bg-white md:col-span-7">
                   <Image
                     src={property.image.src}
@@ -83,7 +83,7 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
                   {/* Looks like a button; the slide's link already takes the click and the focus. */}
                   <span
                     aria-hidden
-                    className="mt-7 inline-flex items-center gap-2 bg-navy px-6 py-3 font-semibold text-white transition-colors duration-200 group-hover:bg-navy-soft"
+                    className="mt-7 inline-flex items-center gap-2 rounded-lg bg-navy px-6 py-3 font-semibold text-white transition-colors duration-200 group-hover:bg-navy-soft"
                   >
                     Ver anúncio
                     <FaArrowRight className="text-sm transition-transform duration-200 ease-out group-hover:translate-x-1 motion-reduce:transition-none" />

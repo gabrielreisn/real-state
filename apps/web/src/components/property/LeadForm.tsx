@@ -54,7 +54,7 @@ export function LeadForm({ propertyCode, whatsapp, id = 'lead' }: { propertyCode
           </a>
         </p>
       )}
-      <button type="submit" disabled={pending} className="w-full bg-brand py-3 font-medium text-white hover:bg-brand-dark disabled:opacity-60">
+      <button type="submit" disabled={pending} className="w-full rounded-lg bg-brand py-3 font-medium text-white hover:bg-brand-dark disabled:opacity-60">
         {pending ? 'Enviando…' : 'Enviar mensagem'}
       </button>
     </form>

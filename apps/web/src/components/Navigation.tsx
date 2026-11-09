@@ -156,7 +156,7 @@ export function Navigation({
           href={whatsappLink(whatsapp, 'Olá! Vim pelo site e gostaria de mais informações.')}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 bg-brand px-4 py-2.5 font-semibold text-white hover:bg-brand-dark"
+          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-semibold text-white hover:bg-brand-dark"
         >
           <FaWhatsapp aria-hidden className="text-lg" /> WhatsApp
         </a>

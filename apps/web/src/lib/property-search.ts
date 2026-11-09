@@ -27,6 +27,24 @@ export function queryWords(query: string) {
   return meaningful.length > 0 ? meaningful : all;
 }
 
+/** Splits text around the searched words, ignoring accents and case, so the matching parts can be emphasized. */
+export function highlightParts(text: string, query: string) {
+  // One character at a time, so positions still line up with the original text.
+  const plain = [...text].map((char) => char.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().padEnd(1).slice(0, 1)).join('');
+  const marked = new Array<boolean>(plain.length).fill(false);
+  for (const word of queryWords(query)) {
+    for (let at = plain.indexOf(word); at !== -1; at = plain.indexOf(word, at + word.length)) marked.fill(true, at, at + word.length);
+  }
+  const chars = [...text];
+  const parts: { text: string; match: boolean }[] = [];
+  chars.forEach((char, index) => {
+    const last = parts.at(-1);
+    if (last && last.match === marked[index]) last.text += char;
+    else parts.push({ text: char, match: marked[index] });
+  });
+  return parts;
+}
+
 /** Edit distance counting a swap of neighboring letters as one edit, which is how most typos happen. */
 function editDistance(a: string, b: string) {
   let beforePrevious: number[] = [];

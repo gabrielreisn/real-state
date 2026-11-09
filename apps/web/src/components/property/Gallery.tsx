@@ -83,7 +83,7 @@ export function Gallery({ images }: { images: GalleryImage[] }) {
               aria-current={index === active}
               onClick={() => setActive(index)}
               className={clsx(
-                'relative block h-16 w-24 overflow-hidden rounded-lg bg-[#141414] transition-opacity duration-150 motion-reduce:transition-none',
+                'relative block h-16 w-24 overflow-hidden rounded-lg bg-[#141414] outline-offset-1 transition-opacity duration-150 motion-reduce:transition-none',
                 index === active ? 'ring-2 ring-brand ring-offset-2' : 'opacity-70 hover:opacity-100',
               )}
             >

@@ -164,7 +164,7 @@ export async function ListingsPage(props: ListingsProps) {
               href={whatsappLink(site.whatsapp, 'Olá! Estou procurando um imóvel com estas características:')}
               target="_blank"
               rel="noreferrer"
-              className="mt-5 inline-block bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark"
+              className="mt-5 inline-block rounded-lg bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark"
             >
               Pedir pelo WhatsApp
             </a>

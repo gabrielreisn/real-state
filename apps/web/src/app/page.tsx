@@ -49,10 +49,10 @@ export default async function HomePage({
         {background ? (
           <div aria-hidden className="absolute inset-0 overflow-hidden">
             <Image src={background.src} alt="" fill sizes="100vw" loading="eager" fetchPriority="high" className="object-cover" />
-            <div className="absolute inset-0 bg-linear-to-t from-navy/90 via-navy/60 to-navy/45" />
+            <div className="absolute inset-0 bg-linear-to-t from-navy/80 via-navy/50 to-navy/25" />
           </div>
         ) : null}
-        <div className="relative mx-auto flex min-h-[24rem] max-w-7xl flex-col justify-center px-4 py-14 md:min-h-[32rem] md:px-8 md:py-20">
+        <div className="relative mx-auto flex min-h-[36rem] max-w-7xl flex-col justify-center px-4 py-16 md:min-h-[clamp(44rem,calc(100svh-var(--header-offset)),56rem)] md:px-8 md:py-20">
           <h1 id="busca-titulo" className="mb-7 max-w-3xl text-[2rem] leading-tight font-bold tracking-tight text-balance md:text-[3.25rem]">
             Imóveis à venda na Grande Vitória
           </h1>

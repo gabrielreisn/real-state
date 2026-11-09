@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { filterProperties } from './filters';
-import { createSearcher, normalize, type SearchFields } from './property-search';
+import { createSearcher, highlightParts, normalize, type SearchFields } from './property-search';
 import { createSuggester, listingForCode, type SuggestionListing } from './search-suggestions';
 
 const listing = (fields: Pick<SearchFields, 'code' | 'neighborhood' | 'city'> & Partial<SearchFields>): SuggestionListing => ({
@@ -24,6 +24,16 @@ const suggest = createSuggester(listings);
 describe('normalize', () => {
   it('ignores accents, case and punctuation', () => {
     expect(normalize('  Santa LÚCIA, Vitória! ')).toBe('santa lucia vitoria');
+  });
+});
+
+describe('highlightParts', () => {
+  it('marks searched words ignoring accents and case', () => {
+    expect(highlightParts('Santa Lúcia', 'lucia')).toEqual([{ text: 'Santa ', match: false }, { text: 'Lúcia', match: true }]);
+  });
+
+  it('marks nothing for a typo', () => {
+    expect(highlightParts('Monalisa', 'monaliza')).toEqual([{ text: 'Monalisa', match: false }]);
   });
 });
 
