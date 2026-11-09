@@ -50,31 +50,6 @@
   }
 }
 
-@layer components {
-  /* An inline dropdown inside the search sentence. */
-  .choice {
-    appearance: none;
-    field-sizing: content;
-    max-width: 100%;
-    padding: 0 1.1em 0.05em 0;
-    border: 0;
-    border-bottom: 0.08em solid var(--color-gold);
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-    text-overflow: ellipsis;
-  }
-
-  .choice option,
-  .choice optgroup {
-    background: #fff;
-    color: var(--color-ink);
-    font-size: 1rem;
-  }
-}
-
 /* Cards rise in gently as they scroll into view; cards already on screen show as they are. */
 @keyframes reveal {
   from {

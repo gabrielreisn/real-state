@@ -30,6 +30,8 @@ const SUMMARY_FIELDS = /* groq */ `
   bathrooms,
   parking,
   excerpt,
+  condominium,
+  address,
   externalUrl,
   "city": neighborhood->city,
   "neighborhood": neighborhood->name,
@@ -52,6 +54,8 @@ type RawSummary = {
   bathrooms: number | null;
   parking: number | null;
   excerpt: string | null;
+  condominium: string | null;
+  address: string | null;
   externalUrl: string | null;
   city: string;
   neighborhood: string;
@@ -92,6 +96,8 @@ function toSummary(raw: RawSummary): PropertySummary {
     photos,
     photoCount: Math.max(raw.photoCount ?? 0, photos.length),
     excerpt: raw.excerpt ?? '',
+    condominium: optional(raw.condominium),
+    address: optional(raw.address),
     // Listings that are not complete here yet keep pointing at their page on the live site.
     href: raw.externalUrl ?? `/imovel/${raw.id}/${raw.slug}`,
   };
@@ -120,6 +126,9 @@ export const getListingStats = cache(async () => {
 export const getFeaturedProperties = cache(async () =>
   summaries(await sanityFetch<(RawSummary | null)[] | null>(`*[_id == "siteSettings"][0].featuredProperties[]->{ ${SUMMARY_FIELDS} }`)),
 );
+
+/** The photo behind the home page search, when an editor has chosen one. */
+export const getHeroImage = cache(async () => toImage(await sanityFetch<SanityImage>(`*[_id == "siteSettings"][0].heroImage ${IMAGE_PROJECTION}`)));
 
 export const getPropertyTypes = cache(async () =>
   (await sanityFetch<string[]>(`array::unique(*[${LISTED}].type)`)).toSorted((a, b) => a.localeCompare(b, 'pt-BR')),
@@ -162,9 +171,7 @@ export const getPropertyDetailParams = cache(async () =>
 type RawDetail = RawSummary & {
   title: string | null;
   summary: string | null;
-  address: string | null;
   cep: string | null;
-  condominium: string | null;
   builtArea: number | null;
   landArea: number | null;
   livingRooms: number | null;
@@ -184,9 +191,7 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
       ${SUMMARY_FIELDS},
       title,
       summary,
-      address,
       cep,
-      condominium,
       builtArea,
       landArea,
       livingRooms,

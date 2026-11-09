@@ -1,7 +1,10 @@
 import type { PropertySummary } from '@/content/types';
 import { formatPriceShort, plural } from './format';
+import { createSearcher } from './property-search';
 
 export type PropertyFilters = {
+  /** Free text: building, street, neighborhood, code and so on. */
+  busca?: string;
   codigo?: string;
   tipo?: string;
   cidade?: string;
@@ -27,18 +30,9 @@ export const DEFAULT_SORT: SortOrder = 'recentes';
 const PRICE_CEILINGS = [500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000, 5_000_000];
 const BEDROOM_MINIMUMS = [1, 2, 3, 4];
 
-/** The fields searching and sorting read. The home page sends only these to the browser. */
-export type Searchable = Pick<PropertySummary, 'code' | 'type' | 'city' | 'neighborhood' | 'price' | 'bedrooms' | 'area'>;
-
-export const searchable = ({ code, type, city, neighborhood, price, bedrooms, area }: Searchable): Searchable => ({
-  code,
-  type,
-  city,
-  neighborhood,
-  price,
-  bedrooms,
-  area,
-});
+/** The fields searching and sorting read. */
+export type Searchable = Pick<PropertySummary, 'code' | 'type' | 'city' | 'neighborhood' | 'price' | 'bedrooms' | 'area'> &
+  Partial<Pick<PropertySummary, 'condominium' | 'address' | 'excerpt'>>;
 
 type RawParams = Record<string, string | string[] | undefined>;
 
@@ -67,6 +61,7 @@ export function parseFilters(params: RawParams): PropertyFilters {
   const bedrooms = text(params.dormitorios)?.match(/^(\d)(\+)?$/);
   const location = text(params.cidade) ? { cidade: text(params.cidade), bairro: text(params.bairro) } : parseLocation(text(params.local));
   return {
+    busca: text(params.busca),
     codigo: text(params.codigo)?.replace(/^#/, ''),
     tipo: text(params.tipo),
     cidade: location.cidade,
@@ -95,6 +90,7 @@ export function filtersToSearch(filters: PropertyFilters, sort: SortOrder) {
     ['dormitorios', filters.dormitorios === undefined ? undefined : `${filters.dormitorios}${filters.dormitoriosOuMais ? '+' : ''}`],
     ['valorMin', filters.valorMin],
     ['valorMax', filters.valorMax],
+    ['busca', filters.busca],
     ['codigo', filters.codigo],
     ['ordem', sort === DEFAULT_SORT ? undefined : sort],
   ];
@@ -103,7 +99,9 @@ export function filtersToSearch(filters: PropertyFilters, sort: SortOrder) {
 }
 
 export function filterProperties<T extends Searchable>(properties: T[], filters: PropertyFilters) {
+  const found = filters.busca ? new Set(createSearcher(properties)(filters.busca)) : null;
   return properties.filter((property) => {
+    if (found && !found.has(property)) return false;
     if (filters.codigo && property.code !== filters.codigo) return false;
     if (filters.tipo && property.type !== filters.tipo) return false;
     if (filters.cidade && property.city !== filters.cidade) return false;
@@ -180,11 +178,12 @@ export function searchOptions(properties: Searchable[]): SearchOptions {
 
 export const bedroomsLabel = (minimum: number) => `${minimum} ou mais ${plural(minimum, 'quarto', 'quartos')}`;
 
-export type FilterChipKey = 'codigo' | 'tipo' | 'local' | 'dormitorios' | 'valorMin' | 'valorMax';
+export type FilterChipKey = 'busca' | 'codigo' | 'tipo' | 'local' | 'dormitorios' | 'valorMin' | 'valorMax';
 export type FilterChip = { key: FilterChipKey; label: string };
 
 export function filterChips(filters: PropertyFilters): FilterChip[] {
   const chips: (FilterChip | false)[] = [
+    !!filters.busca && { key: 'busca', label: `“${filters.busca}”` },
     !!filters.codigo && { key: 'codigo', label: `Código ${filters.codigo}` },
     !!filters.tipo && { key: 'tipo', label: filters.tipo },
     !!(filters.bairro || filters.cidade) && {

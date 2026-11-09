@@ -22,6 +22,10 @@ export type PropertySummary = {
   /** Every photo in the listing's gallery, for the card's "more photos" hint. */
   photoCount: number;
   excerpt: string;
+  /** Building or condominium name; only some listings have one. */
+  condominium?: string;
+  /** Street; only some listings have one. */
+  address?: string;
   /** Internal path when the listing has a page here; otherwise its page on the live site. */
   href: string;
 };

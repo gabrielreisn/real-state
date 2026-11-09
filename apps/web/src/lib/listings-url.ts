@@ -24,6 +24,7 @@ export function listingsHref(filters: PropertyFilters, sort: SortOrder = DEFAULT
   }
   const params = new URLSearchParams();
   const entries: [string, string | number | undefined][] = [
+    ['busca', filters.busca],
     ['tipo', filters.tipo],
     ['dormitorios', filters.dormitorios === undefined ? undefined : `${filters.dormitorios}${filters.dormitoriosOuMais ? '+' : ''}`],
     ['valorMin', filters.valorMin],

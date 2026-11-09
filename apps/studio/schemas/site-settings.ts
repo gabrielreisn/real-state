@@ -65,6 +65,13 @@ export const siteSettings = defineType({
       of: [defineArrayMember({ type: 'url' })],
     }),
     defineField({
+      name: 'heroImage',
+      title: 'Foto de fundo da página inicial',
+      description: 'Aparece atrás da busca. Prefira uma foto horizontal, sem marca d’água. Sem foto, usa a capa do primeiro destaque.',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
       name: 'featuredProperties',
       title: 'Destaques da página inicial',
       description: 'Arraste para mudar a ordem.',

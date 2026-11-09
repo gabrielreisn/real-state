@@ -56,6 +56,8 @@ export async function listingsMetadata(props: ListingsProps): Promise<Metadata> 
     title: page > 1 ? `${heading} – página ${page}` : heading,
     description,
     alternates: { canonical: listingsHref(filters, sort, page) },
+    // Free text makes endless near-duplicate pages; cities and neighborhoods have their own indexable ones.
+    robots: filters.busca ? { index: false, follow: true } : undefined,
     // The newest listing's photo; searches without results fall back to the site card.
     openGraph: {
       ...openGraphDefaults,
