@@ -6,6 +6,7 @@ import { FeaturedCarousel } from '@/components/FeaturedCarousel';
 import { Neighborhoods } from '@/components/Neighborhoods';
 import { PropertyCard } from '@/components/PropertyCard';
 import { HomeSearch } from '@/components/search/HomeSearch';
+import { PropertyWatermark } from '@/components/PropertyWatermark';
 import { JsonLd } from '@/components/JsonLd';
 import { getFeaturedProperties, getHeroImage, getNeighborhoods, getProperties, SITE_URL } from '@/content';
 import { hasActiveFilters, parseFilters, parseSort } from '@/lib/filters';
@@ -49,6 +50,7 @@ export default async function HomePage({
         {background ? (
           <div aria-hidden className="absolute inset-0 overflow-hidden">
             <Image src={background.src} alt="" fill sizes="100vw" loading="eager" fetchPriority="high" className="object-cover" />
+            <PropertyWatermark image={background} />
             <div className="absolute inset-0 bg-linear-to-t from-navy/80 via-navy/50 to-navy/25" />
           </div>
         ) : null}

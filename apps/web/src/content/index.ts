@@ -15,7 +15,7 @@ const LISTED = /* groq */ `_type == "property" && defined(slug.current) && defin
 /** Photos in each card's carousel. The rest are on the listing page. */
 export const CARD_PHOTOS = 5;
 // Card photos after the cover load on interaction, so they skip the blur placeholder.
-const LIGHT_IMAGE_PROJECTION = /* groq */ `{ alt, crop, hotspot, asset->{ _id } }`;
+const LIGHT_IMAGE_PROJECTION = /* groq */ `{ alt, watermark, crop, hotspot, asset->{ _id } }`;
 
 const SUMMARY_FIELDS = /* groq */ `
   "id": code,
@@ -37,7 +37,8 @@ const SUMMARY_FIELDS = /* groq */ `
   "state": neighborhood->state,
   "image": coverImage ${IMAGE_PROJECTION},
   "photos": gallery[0...${CARD_PHOTOS + 1}] ${LIGHT_IMAGE_PROJECTION},
-  "photoCount": count(gallery)
+  "photoCount": count(gallery),
+  "watermark": *[_id == "siteSettings"][0].watermarkImage ${IMAGE_PROJECTION}
 `;
 
 type RawSummary = {
@@ -61,6 +62,7 @@ type RawSummary = {
   image: SanityImage;
   photos: SanityImage[] | null;
   photoCount: number | null;
+  watermark: SanityImage;
 };
 
 const optional = <T,>(value: T | null | undefined) => value ?? undefined;
@@ -68,10 +70,11 @@ const optional = <T,>(value: T | null | undefined) => value ?? undefined;
 const withoutParams = (src: string) => src.split('?')[0];
 
 function toSummary(raw: RawSummary): PropertySummary {
-  const cover = toImage(raw.image)!;
+  const watermark = toImage(raw.watermark)?.src;
+  const cover = toImage(raw.image, watermark)!;
   // Imported galleries start with the cover, and a few repeat a photo; each shows once.
   const photos: Image[] = [];
-  for (const photo of [cover, ...(raw.photos ?? []).map(toImage)]) {
+  for (const photo of [cover, ...(raw.photos ?? []).map((photo) => toImage(photo, watermark))]) {
     const duplicate = photos.some((kept) => withoutParams(kept.src) === withoutParams(photo?.src ?? ''));
     if (photo && !duplicate && photos.length < CARD_PHOTOS) photos.push(photo);
   }
@@ -212,7 +215,8 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
   const text = (value: string | string[] | null | undefined) => (typeof value === 'string' ? value : '');
   const list = (value: string | string[] | null | undefined) => (Array.isArray(value) ? value : []);
   const description = raw.description ?? {};
-  const gallery = (raw.gallery ?? []).map(toImage).filter((image) => image !== null);
+  const watermark = toImage(raw.watermark)?.src;
+  const gallery = (raw.gallery ?? []).map((image) => toImage(image, watermark)).filter((image) => image !== null);
 
   return {
     ...summary,

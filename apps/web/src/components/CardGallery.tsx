@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import type { Image as Photo } from '@/content/types';
 import { PropertyLink } from './PropertyLink';
+import { PropertyWatermark } from './PropertyWatermark';
 
 const SIZES = '(min-width: 1536px) 340px, (min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw';
 
@@ -51,15 +52,18 @@ export function CardGallery({ photos, total, href }: { photos: Photo[]; total: n
         {photos.map((photo, i) => (
           <PropertyLink key={photo.src} href={href} tabIndex={-1} className="relative block h-full w-full shrink-0 snap-start snap-always overflow-hidden">
             {i === 0 || armed ? (
-              <Image
-                src={photo.src}
-                alt=""
-                fill
-                sizes={SIZES}
-                placeholder={photo.lqip ? 'blur' : 'empty'}
-                blurDataURL={photo.lqip}
-                className="animate-fade-in object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none"
-              />
+              <>
+                <Image
+                  src={photo.src}
+                  alt=""
+                  fill
+                  sizes={SIZES}
+                  placeholder={photo.lqip ? 'blur' : 'empty'}
+                  blurDataURL={photo.lqip}
+                  className="animate-fade-in object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none"
+                />
+                <PropertyWatermark image={photo} />
+              </>
             ) : null}
             {i === last && hidden > 0 ? (
               <span className="absolute inset-0 flex items-center justify-center bg-navy/60 text-lg font-semibold text-white">

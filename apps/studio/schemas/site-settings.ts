@@ -80,6 +80,12 @@ export const siteSettings = defineType({
       validation: (r) => r.unique(),
     }),
     defineField({ name: 'logo', title: 'Logo', type: 'image' }),
+    defineField({
+      name: 'watermarkImage',
+      title: 'Marca d’água das fotos',
+      description: 'Envie uma imagem PNG com fundo transparente. Ela aparece apenas nas fotos em que “Aplicar marca d’água” está ativado.',
+      type: 'image',
+    }),
   ],
   preview: { prepare: () => ({ title: 'Configurações do site' }) },
 });

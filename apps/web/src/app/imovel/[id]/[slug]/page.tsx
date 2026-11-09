@@ -10,6 +10,7 @@ import { LeadForm } from '@/components/property/LeadForm';
 import { PropertyMap } from '@/components/property/PropertyMap';
 import { TrackView } from '@/components/property/TrackView';
 import { PropertyLink } from '@/components/PropertyLink';
+import { PropertyWatermark } from '@/components/PropertyWatermark';
 import { JsonLd } from '@/components/JsonLd';
 import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, SITE_URL } from '@/content';
 import { formatPrice, placeName } from '@/lib/format';
@@ -313,6 +314,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
                       blurDataURL={listing.image.lqip}
                       className="object-cover"
                     />
+                    <PropertyWatermark image={listing.image} />
                   </div>
                   <div className="p-4">
                     <p className="text-sm text-slate">

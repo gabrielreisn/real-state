@@ -1,4 +1,13 @@
-export type Image = { src: string; alt: string; width?: number; height?: number; /** Tiny blurred preview from Sanity. */ lqip?: string };
+export type Image = {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  /** Tiny blurred preview from Sanity. */
+  lqip?: string;
+  /** The site-wide mark, shown only when this particular photo opts in. */
+  watermark?: string;
+};
 
 export type PropertySummary = {
   id: string;

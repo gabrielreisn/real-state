@@ -7,6 +7,7 @@ import type { PropertySummary } from '@/content/types';
 import { formatPrice } from '@/lib/format';
 import { PropertyFacts } from './PropertyFacts';
 import { PropertyLink } from './PropertyLink';
+import { PropertyWatermark } from './PropertyWatermark';
 
 const stepButton = 'flex h-11 w-11 items-center justify-center rounded-full border border-navy/30 bg-white hover:border-navy';
 
@@ -67,6 +68,7 @@ export function FeaturedCarousel({ properties }: { properties: PropertySummary[]
                     blurDataURL={property.image.lqip}
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
                   />
+                  <PropertyWatermark image={property.image} />
                 </div>
                 <div className="md:col-span-5">
                   <h3 className="text-2xl leading-tight font-bold tracking-tight transition-colors duration-200 group-hover:text-brand md:text-[2rem]">

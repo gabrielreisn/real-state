@@ -1,5 +1,6 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
 import { CurrencyInput } from '../components/CurrencyInput';
+import { PropertyImageInput } from '../components/PropertyImageInput';
 import { slugify } from './slug';
 
 const count = (name: string, title: string) =>
@@ -10,7 +11,11 @@ const imageWithAlt = (title: string) =>
     type: 'image',
     title,
     options: { hotspot: true },
-    fields: [defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() })],
+    components: { input: PropertyImageInput },
+    fields: [
+      defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() }),
+      defineField({ name: 'watermark', title: 'Aplicar marca d’água', type: 'boolean', hidden: true }),
+    ],
   });
 
 export const property = defineType({
@@ -119,7 +124,11 @@ export const property = defineType({
       type: 'image',
       group: 'media',
       options: { hotspot: true },
-      fields: [defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() })],
+      components: { input: PropertyImageInput },
+      fields: [
+        defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() }),
+        defineField({ name: 'watermark', title: 'Aplicar marca d’água', type: 'boolean', hidden: true }),
+      ],
       validation: (r) => r.required(),
     }),
     // Do not give this member a custom name: existing imported photos have `_type: "image"`.

@@ -6,6 +6,7 @@ import { type CSSProperties, type KeyboardEvent, useEffect, useRef, useState } f
 import { FaChevronLeft, FaChevronRight, FaExpand, FaXmark } from 'react-icons/fa6';
 import type { Image as GalleryImage } from '@/content/types';
 import { galleryFrameRatio } from '@/lib/gallery-frame';
+import { PropertyWatermark } from '../PropertyWatermark';
 
 const control =
   'flex size-11 items-center justify-center rounded-full bg-white/95 text-navy shadow-md transition-colors duration-150 hover:bg-brand hover:text-white motion-reduce:transition-none';
@@ -60,6 +61,7 @@ export function Gallery({ images }: { images: GalleryImage[] }) {
           blurDataURL={image.lqip}
           className="object-contain"
         />
+        <PropertyWatermark image={image} />
         <button type="button" aria-label="Foto anterior" onClick={() => go(-1)} className={clsx(control, 'absolute top-1/2 left-3 -translate-y-1/2')}>
           <FaChevronLeft aria-hidden />
         </button>
@@ -88,6 +90,7 @@ export function Gallery({ images }: { images: GalleryImage[] }) {
               )}
             >
               <Image src={thumbnail.src} alt="" fill sizes="96px" quality={60} loading="lazy" className="object-cover" />
+              <PropertyWatermark image={thumbnail} />
             </button>
           </li>
         ))}
@@ -101,6 +104,7 @@ export function Gallery({ images }: { images: GalleryImage[] }) {
       >
         <div className="relative h-full w-full">
           <Image src={image.src} alt={image.alt} fill quality={85} sizes="100vw" className="object-contain" />
+          <PropertyWatermark image={image} />
           <button type="button" aria-label="Foto anterior" onClick={() => go(-1)} className={clsx(control, 'absolute top-1/2 left-3 -translate-y-1/2')}>
             <FaChevronLeft aria-hidden />
           </button>
