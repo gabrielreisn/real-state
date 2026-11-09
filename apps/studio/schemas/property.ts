@@ -1,6 +1,6 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
+import { AutoImageDescriptionInput } from '../components/AutoImageDescriptionInput';
 import { CurrencyInput } from '../components/CurrencyInput';
-import { PropertyImageInput } from '../components/PropertyImageInput';
 import { slugify } from './slug';
 
 const count = (name: string, title: string) =>
@@ -11,10 +11,9 @@ const imageWithAlt = (title: string) =>
     type: 'image',
     title,
     options: { hotspot: true },
-    components: { input: PropertyImageInput },
     fields: [
-      defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() }),
-      defineField({ name: 'watermark', title: 'Aplicar marca d’água', type: 'boolean', hidden: true }),
+      defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', components: { input: AutoImageDescriptionInput }, validation: (r) => r.required() }),
+      defineField({ name: 'watermark', title: 'Aplicar marca d’água', type: 'boolean', initialValue: false }),
     ],
   });
 
@@ -124,10 +123,9 @@ export const property = defineType({
       type: 'image',
       group: 'media',
       options: { hotspot: true },
-      components: { input: PropertyImageInput },
       fields: [
-        defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() }),
-        defineField({ name: 'watermark', title: 'Aplicar marca d’água', type: 'boolean', hidden: true }),
+        defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', components: { input: AutoImageDescriptionInput }, validation: (r) => r.required() }),
+        defineField({ name: 'watermark', title: 'Aplicar marca d’água', type: 'boolean', initialValue: false }),
       ],
       validation: (r) => r.required(),
     }),

@@ -2,6 +2,7 @@ import { visionTool } from '@sanity/vision';
 import { defineConfig, type WorkspaceOptions } from 'sanity';
 import { presentationTool } from 'sanity/presentation';
 import { structureTool } from 'sanity/structure';
+import { media } from 'sanity-plugin-media';
 import { previewAction } from './actions/preview';
 import { ToolMenu } from './components/ToolMenu';
 import { resolve } from './presentation';
@@ -24,6 +25,7 @@ function workspace({ dataset, title, subtitle, previewUrl }: { dataset: string; 
     dataset,
     plugins: [
       structureTool({ structure }),
+      media(),
       presentationTool({
         title: 'Pré-visualização',
         resolve,
