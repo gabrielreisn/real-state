@@ -1,7 +1,9 @@
 import { PortableText, type PortableTextComponents } from '@portabletext/react';
+import Image from 'next/image';
 import { FaArrowUpRightFromSquare } from 'react-icons/fa6';
+import { FinancingCalculator } from './FinancingCalculator';
 
-type LinkCards = { links?: { _key: string; label: string; description?: string; url: string }[] };
+type LinkCards = { links?: { _key: string; label: string; description?: string; url: string; logoUrl?: string; rate?: string }[] };
 type MapEmbed = { title?: string; address: string };
 
 const components: PortableTextComponents = {
@@ -29,19 +31,33 @@ const components: PortableTextComponents = {
               href={link.url}
               target="_blank"
               rel="noreferrer"
-              className="flex h-full items-center justify-between gap-4 border border-line p-4 hover:border-navy"
+              className="group flex h-full flex-col rounded-lg border border-line p-5 transition-colors duration-150 hover:border-navy"
             >
-              <span>
-                <span className="block font-semibold">{link.label}</span>
-                {link.description ? <span className="block text-sm text-slate">{link.description}</span> : null}
+              {link.logoUrl ? (
+                <span className="relative block h-9 w-32">
+                  <Image src={link.logoUrl} alt={link.label} fill unoptimized sizes="8rem" className="object-contain object-left" />
+                </span>
+              ) : (
+                <span className="block text-xl font-bold">{link.label}</span>
+              )}
+              {link.rate ? (
+                <span className="mt-4 block">
+                  <span className="block text-sm text-slate">A partir de</span>
+                  <span className="block text-xl font-bold">{link.rate}</span>
+                </span>
+              ) : null}
+              {link.description ? <span className="mt-2 block text-sm leading-snug text-slate">{link.description}</span> : null}
+              <span className="mt-auto flex items-center gap-2 pt-4 text-base font-semibold text-brand group-hover:underline">
+                Simular no banco
+                <FaArrowUpRightFromSquare aria-hidden className="text-xs" />
               </span>
-              <FaArrowUpRightFromSquare aria-hidden className="shrink-0 text-sm text-slate" />
               <span className="sr-only">(abre em nova aba)</span>
             </a>
           </li>
         ))}
       </ul>
     ),
+    financingCalculator: () => <FinancingCalculator />,
     // A keyless Google Maps embed of the address.
     mapEmbed: ({ value }: { value: MapEmbed }) => (
       <figure id="mapa" className="mt-10 scroll-mt-6">

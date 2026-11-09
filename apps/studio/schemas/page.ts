@@ -40,6 +40,13 @@ export const page = defineType({
         }),
         defineArrayMember({
           type: 'object',
+          name: 'financingCalculator',
+          title: 'Simulador de parcela',
+          fields: [defineField({ name: 'note', title: 'Anotação interna', type: 'string' })],
+          preview: { prepare: () => ({ title: 'Simulador de parcela' }) },
+        }),
+        defineArrayMember({
+          type: 'object',
           name: 'linkCards',
           title: 'Lista de links',
           fields: [
@@ -55,6 +62,8 @@ export const page = defineType({
                     defineField({ name: 'label', title: 'Nome', type: 'string', validation: (r) => r.required() }),
                     defineField({ name: 'description', title: 'Descrição', type: 'string' }),
                     defineField({ name: 'url', title: 'Endereço (URL)', type: 'url', validation: (r) => r.required() }),
+                    defineField({ name: 'logo', title: 'Logo', type: 'image' }),
+                    defineField({ name: 'rate', title: 'Taxa inicial', description: 'Aparece depois de "A partir de". Ex.: 10,26% a.a. + TR', type: 'string' }),
                   ],
                   preview: { select: { title: 'label', subtitle: 'url' } },
                 }),

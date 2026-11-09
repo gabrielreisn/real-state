@@ -264,7 +264,7 @@ export const getPageSlugs = cache(async () =>
 
 export const getPage = cache(async (slug: string) => {
   const page = await sanityFetch<(Page & { description: string | null; form: Page['form'] | null; formTitle: string | null }) | null>(
-    `*[_type == "page" && slug.current == $slug][0] { title, "slug": slug.current, description, "body": coalesce(body, []), form, formTitle }`,
+    `*[_type == "page" && slug.current == $slug][0] { title, "slug": slug.current, description, "body": coalesce(body[]{ ..., _type == "linkCards" => { links[]{ ..., "logoUrl": logo.asset->url } } }, []), form, formTitle }`,
     { slug },
   );
   if (!page) return null;
