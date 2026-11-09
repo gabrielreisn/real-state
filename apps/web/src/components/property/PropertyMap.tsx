@@ -1,11 +1,10 @@
 import { stegaClean } from 'next-sanity';
 import type { PropertyDetail } from '@/content/types';
-import { cepCoordinates, propertyMap } from '@/lib/property-map';
+import { propertyMap } from '@/lib/property-map';
 
-export async function PropertyMap({ property }: { property: PropertyDetail }) {
-  const coordinates = property.cep ? await cepCoordinates(property.cep) : null;
+export function PropertyMap({ property }: { property: PropertyDetail }) {
   // In preview mode the address carries invisible edit markers, which must not reach the map URL.
-  const map = propertyMap({ ...property, address: stegaClean(property.address) }, coordinates);
+  const map = propertyMap({ ...property, address: stegaClean(property.address) });
 
   return (
     <section aria-labelledby="localizacao-titulo">
