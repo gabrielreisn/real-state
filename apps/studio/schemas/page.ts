@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
+import { slugify } from './slug';
 
 export const PAGE_FORMS = [{ title: 'Cadastro de imóvel (proprietários)', value: 'propertySubmission' }];
 
@@ -11,15 +12,14 @@ export const page = defineType({
     defineField({
       name: 'slug',
       title: 'Endereço',
-      description: 'A página abre em /<endereço>. Ex.: "sobre" abre em /sobre.',
+      description: 'Gerado a partir do título. A página abre em /<endereço>. Ex.: "sobre" abre em /sobre.',
       type: 'slug',
-      options: { source: 'title' },
+      options: { source: 'title', slugify },
       validation: (r) =>
         r.required().custom((slug) => (slug?.current === 'imovel' ? '"imovel" é usado pelas páginas de imóveis.' : true)),
     }),
     defineField({ name: 'description', title: 'Descrição para buscadores', type: 'text', rows: 2, validation: (r) => r.max(200) }),
     defineField({ name: 'showInMenu', title: 'Mostrar no menu "Informações"', type: 'boolean', initialValue: true }),
-    defineField({ name: 'menuOrder', title: 'Ordem no menu', type: 'number', hidden: ({ document }) => !document?.showInMenu }),
     defineField({
       name: 'body',
       title: 'Conteúdo',
@@ -93,6 +93,6 @@ export const page = defineType({
     }),
     defineField({ name: 'formTitle', title: 'Título do formulário', type: 'string', hidden: ({ document }) => !document?.form }),
   ],
-  orderings: [{ title: 'Ordem no menu', name: 'menuOrder', by: [{ field: 'menuOrder', direction: 'asc' }] }],
+  orderings: [{ title: 'Título', name: 'titleAsc', by: [{ field: 'title', direction: 'asc' }] }],
   preview: { select: { title: 'title', slug: 'slug.current' }, prepare: ({ title, slug }) => ({ title, subtitle: `/${slug ?? ''}` }) },
 });

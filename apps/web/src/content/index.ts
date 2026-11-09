@@ -251,10 +251,16 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
   };
 });
 
-/** Pages listed under "Informações", in menu order. */
+/** The public information menu has a deliberate, stable order. New enabled pages follow it alphabetically. */
+const MENU_ORDER = ['sobre', 'seu-imovel', 'financiamento', 'correspondente'];
+
 export const getMenuPages = cache(async () =>
-  sanityFetch<MenuPage[]>(
-    `*[_type == "page" && defined(slug.current) && showInMenu != false] | order(coalesce(menuOrder, 999) asc, title asc) { title, "slug": slug.current }`,
+  (await sanityFetch<MenuPage[]>(`*[_type == "page" && defined(slug.current) && showInMenu != false] { title, "slug": slug.current }`)).toSorted(
+    (a, b) => {
+      const aOrder = MENU_ORDER.indexOf(a.slug);
+      const bOrder = MENU_ORDER.indexOf(b.slug);
+      return (aOrder < 0 ? MENU_ORDER.length : aOrder) - (bOrder < 0 ? MENU_ORDER.length : bOrder) || a.title.localeCompare(b.title, 'pt-BR');
+    },
   ),
 );
 

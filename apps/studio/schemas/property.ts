@@ -1,12 +1,12 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
+import { slugify } from './slug';
 
 const count = (name: string, title: string) =>
   defineField({ name, title, type: 'number', group: 'specs', validation: (r) => r.integer().min(0) });
 
-const imageWithAlt = (name: string, title: string) =>
+const imageWithAlt = (title: string) =>
   defineArrayMember({
     type: 'image',
-    name,
     title,
     options: { hotspot: true },
     fields: [defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() })],
@@ -31,7 +31,15 @@ export const property = defineType({
       type: 'string',
       group: 'main',
     }),
-    defineField({ name: 'slug', title: 'Slug', type: 'slug', group: 'main', options: { source: 'title' }, validation: (r) => r.required() }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      group: 'main',
+      description: 'Gerado a partir do título. Use apenas letras, números e hífens.',
+      options: { source: 'title', slugify },
+      validation: (r) => r.required(),
+    }),
     defineField({
       name: 'legacyId',
       title: 'ID no site antigo',
@@ -126,7 +134,8 @@ export const property = defineType({
       fields: [defineField({ name: 'alt', title: 'Descrição da foto', type: 'string', validation: (r) => r.required() })],
       validation: (r) => r.required(),
     }),
-    defineField({ name: 'gallery', title: 'Galeria', type: 'array', group: 'media', of: [imageWithAlt('galleryImage', 'Foto')] }),
+    // Do not give this member a custom name: existing imported photos have `_type: "image"`.
+    defineField({ name: 'gallery', title: 'Galeria', type: 'array', group: 'media', of: [imageWithAlt('Foto')] }),
 
     defineField({ name: 'excerpt', title: 'Chamada', description: 'Texto curto dos destaques.', type: 'text', rows: 3, group: 'content', validation: (r) => r.max(220) }),
     defineField({ name: 'summary', title: 'Resumo da ficha', description: 'Linha abaixo do título da página.', type: 'text', rows: 2, group: 'content' }),
