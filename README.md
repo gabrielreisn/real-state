@@ -46,7 +46,7 @@ In the GA4 web stream, leave **Enhanced measurement → Page views → Page chan
 - **Content** (listings, neighborhoods, contact details, featured listings) lives in Sanity. The web app reads it only through the functions in [apps/web/src/content/index.ts](apps/web/src/content/index.ts), Published edits reach the site within seconds: `<SanityLive />` listens for changes and revalidates only the cached queries they touch.
 - **Images** are served by Sanity's image CDN. A custom `next/image` loader ([sanity-image-loader.ts](apps/web/src/lib/sanity-image-loader.ts)) requests each size with `auto=format` (WebP for browsers that support it) and a quality of 60, 75 or 85.
 - **Pages** such as A Empresa (`/sobre`) and Financiamento are Sanity `page` documents, rendered by `apps/web/src/app/[page]`. They appear in the "Informações" menu in menu order.
-- **Property submissions** from "Cadastre seu Imóvel" are validated by a server action and saved to Sanity as private documents (IDs like `submission.<uuid>`, never readable through the public API). They show up in Studio under "Cadastros de imóveis". The web app needs `SANITY_API_WRITE_TOKEN` for this.
+- **Property submissions** from "Cadastre seu Imóvel" are validated by a server action and emailed through Resend. The email includes all contact and property fields and a WhatsApp contact button. These submissions no longer create Sanity records; existing records are preserved.
 - **Leads** go from the property contact form through a server action to Resend. The notification includes the visitor's contact details, message, property code, price and link. When supplied, the visitor's email becomes Reply-To. A configured `API_INTERNAL_URL` also enables best-effort archival via `POST /leads` into Postgres. Email does not require that API to be deployed.
 
 ### Lead notification email
@@ -58,6 +58,14 @@ In the GA4 web stream, leave **Enhanced measurement → Page views → Page chan
 5. Production requires the existing Redis REST variables (`KV_REST_API_URL` / `KV_REST_API_TOKEN`, or their `UPSTASH_REDIS_REST_*` equivalents). Contact submissions are limited to five per IP per ten minutes, using hashed keys. The honeypot silently discards bots; Resend idempotency keys suppress identical submissions in the same ten-minute window.
 
 For a delivery test, submit the property form with a real contact address and check both the Resend delivery log and the recipient inbox. Until sender and API credentials are configured, the form reports an error and offers WhatsApp instead of claiming an email was sent.
+
+Both contact and owner-submission emails use this configuration. Before domain verification, set `LEAD_EMAIL_FROM=Alex Nolasco Imóveis <onboarding@resend.dev>` and set `LEAD_EMAIL_TO` to the email associated with your Resend account. This test sender can only email that account address. Once the domain is verified, remove the sender override and set the production recipient.
+
+Generate HTML previews without sending email:
+
+```bash
+pnpm dlx tsx apps/web/scripts/preview-emails.ts /tmp/real-state-email-previews
+```
 
 ## Sanity
 

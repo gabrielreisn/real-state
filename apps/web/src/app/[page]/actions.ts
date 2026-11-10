@@ -1,8 +1,11 @@
 'use server';
 
-import { randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
+import { headers } from 'next/headers';
+import { getSiteSettings } from '@/content';
 import { validatePropertySubmission } from '@/lib/property-submission';
-import { sanityWriteClient } from '@/lib/sanity/write-client';
+import { sendPropertySubmissionEmail } from '@/lib/property-submission-email';
+import { allowLead } from '@/lib/lead-rate-limit';
 
 // On error the submitted values come back, because React resets the form after an action.
 export type SubmissionState =
@@ -38,17 +41,17 @@ export async function submitProperty(_previous: SubmissionState, data: FormData)
   }
 
   try {
-    await sanityWriteClient().create({
-      // A dot in the ID keeps the document private: never readable through the public API.
-      _id: `submission.${randomUUID()}`,
-      _type: 'propertySubmission',
-      status: 'new',
-      submittedAt: new Date().toISOString(),
-      ...result.value,
-    });
+    const requestHeaders = await headers();
+    const ip = requestHeaders.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
+      || requestHeaders.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
+    if (!await allowLead(ip)) return { status: 'error', message: 'Você enviou vários formulários. Aguarde alguns minutos antes de tentar novamente.', values: submittedValues(data), attempt: Date.now() };
+    const site = await getSiteSettings();
+    const bucket = Math.floor(Date.now() / 600_000);
+    const idempotencyKey = createHash('sha256').update(JSON.stringify({ form: 'property-submission', submission: result.value, bucket })).digest('hex');
+    await sendPropertySubmissionEmail(result.value, site.name, idempotencyKey);
     return { status: 'success' };
   } catch (error) {
-    console.error('Could not save property submission', error);
+    console.error('Could not email property submission', error);
     return { status: 'error', message: 'Não foi possível enviar o cadastro agora.', values: submittedValues(data), attempt: Date.now() };
   }
 }
