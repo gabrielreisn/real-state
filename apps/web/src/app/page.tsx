@@ -9,7 +9,7 @@ import { HomeSearch } from '@/components/search/HomeSearch';
 import { PropertyWatermark } from '@/components/PropertyWatermark';
 import { JsonLd } from '@/components/JsonLd';
 import { getFeaturedProperties, getHeroImage, getNeighborhoods, getProperties, SITE_URL } from '@/content';
-import { hasActiveFilters, parseFilters, parseSort } from '@/lib/filters';
+import { hasActiveFilters, parseFilters, parseSort, searchOptions } from '@/lib/filters';
 import { LISTINGS_PATH, listingsHref } from '@/lib/listings-url';
 import { getPropertyViews } from '@/lib/property-views';
 import { recentAndPopular } from '@/lib/recent-and-popular';
@@ -42,6 +42,7 @@ export default async function HomePage({
 
   const homeListings = recentAndPopular(properties, views, 8);
   const background = heroImage ?? featured[0]?.image;
+  const { bedrooms, lowestPrice, highestPrice } = searchOptions(properties);
 
   return (
     <>
@@ -58,7 +59,7 @@ export default async function HomePage({
           <h1 id="busca-titulo" className="mb-7 max-w-3xl text-[2rem] leading-tight font-bold tracking-tight text-balance md:text-[3.25rem]">
             Imóveis à venda na Grande Vitória
           </h1>
-          <HomeSearch listings={properties.map(suggestionListing)} />
+          <HomeSearch listings={properties.map(suggestionListing)} filterOptions={{ bedrooms, lowestPrice, highestPrice }} />
         </div>
       </section>
 

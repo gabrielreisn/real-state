@@ -24,6 +24,7 @@
   }
 
   html {
+    scrollbar-gutter: stable;
     scroll-behavior: smooth;
     scroll-padding-top: calc(var(--header-offset) + 1.5rem);
   }
