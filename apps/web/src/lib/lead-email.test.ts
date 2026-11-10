@@ -49,6 +49,13 @@ describe('lead notification', () => {
     await expect(sendLeadEmail({ lead, property, site, idempotencyKey: 'test' })).rejects.toThrow('requires');
     expect(request).not.toHaveBeenCalled();
   });
+  it('uses the sending domain provisioned by the Vercel integration', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'key'); vi.stubEnv('RESEND_EMAIL_DOMAIN', 'mail.example.com');
+    vi.stubEnv('LEAD_EMAIL_FROM', ''); vi.stubEnv('LEAD_EMAIL_TO', 'owner@example.com');
+    const request = vi.fn().mockResolvedValue(Response.json({ id: 'email-id' })); vi.stubGlobal('fetch', request);
+    await sendLeadEmail({ lead, property, site, idempotencyKey: 'test' });
+    expect(JSON.parse(request.mock.calls[0][1].body).from).toBe('Alex Nolasco Imóveis <contato@mail.example.com>');
+  });
   it('surfaces provider rejection rather than reporting success', async () => {
     vi.stubEnv('RESEND_API_KEY', 'key'); vi.stubEnv('LEAD_EMAIL_FROM', 'from@example.com'); vi.stubEnv('LEAD_EMAIL_TO', 'to@example.com');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 429 })));

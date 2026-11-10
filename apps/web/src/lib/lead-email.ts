@@ -46,9 +46,10 @@ export async function sendLeadEmail(input: {
   lead: Lead; property: LeadProperty; site: { name: string; url: string }; idempotencyKey: string;
 }) {
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.LEAD_EMAIL_FROM;
+  const domain = process.env.RESEND_EMAIL_DOMAIN;
+  const from = process.env.LEAD_EMAIL_FROM || (domain ? `Alex Nolasco Imóveis <contato@${domain}>` : undefined);
   const to = process.env.LEAD_EMAIL_TO;
-  if (!key || !from || !to) throw new Error('Lead email requires RESEND_API_KEY, LEAD_EMAIL_FROM and LEAD_EMAIL_TO.');
+  if (!key || !from || !to) throw new Error('Lead email requires RESEND_API_KEY, a sender domain/address and LEAD_EMAIL_TO.');
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Idempotency-Key': input.idempotencyKey },
@@ -57,7 +58,11 @@ export async function sendLeadEmail(input: {
     cache: 'no-store',
   });
   // Avoid logging the provider response, which may contain personal data.
-  if (!response.ok) throw new Error(`Resend rejected lead notification (HTTP ${response.status}).`);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({})) as { name?: string };
+    const kind = typeof error.name === 'string' && /^[a-z_]+$/.test(error.name) ? ` ${error.name}` : '';
+    throw new Error(`Resend rejected lead notification (HTTP ${response.status}${kind}).`);
+  }
   const result = await response.json() as { id?: string };
   if (!result.id) throw new Error('Resend did not confirm the lead notification.');
   return result.id;

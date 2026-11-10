@@ -53,7 +53,7 @@ In the GA4 web stream, leave **Enhanced measurement → Page views → Page chan
 
 1. Connect the free [Resend Vercel integration](https://vercel.com/marketplace/resend) to the web project; it sets `RESEND_API_KEY`. For local development, set the key in the root `.env`.
 2. Verify the sending domain in Resend by adding the DNS records it supplies. Use a domain you control; Hotmail can receive notifications but cannot be your Resend sending domain.
-3. Set `LEAD_EMAIL_FROM` (for example, `Alex Nolasco Imóveis <contato@alexnolasco.com.br>`) and `LEAD_EMAIL_TO` (`alexnolascoimoveis@hotmail.com`) in the Vercel environment. Keep secrets server-side.
+3. Set `LEAD_EMAIL_TO` (`alexnolascoimoveis@hotmail.com`) in the Vercel environment. The sender uses `contato@<RESEND_EMAIL_DOMAIN>` from the integration. Optionally override it with `LEAD_EMAIL_FROM` (for example, `Alex Nolasco Imóveis <contato@alexnolasco.com.br>`) after verifying that domain. Keep secrets server-side.
 4. Set `SITE_URL` to the public website URL so email links point to the intended deployment. Redeploy after adding environment variables.
 5. Production requires the existing Redis REST variables (`KV_REST_API_URL` / `KV_REST_API_TOKEN`, or their `UPSTASH_REDIS_REST_*` equivalents). Contact submissions are limited to five per IP per ten minutes, using hashed keys. The honeypot silently discards bots; Resend idempotency keys suppress identical submissions in the same ten-minute window.
 
