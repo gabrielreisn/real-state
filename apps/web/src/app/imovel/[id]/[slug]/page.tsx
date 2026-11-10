@@ -4,17 +4,19 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Fragment } from 'react';
 import type { IconType } from 'react-icons';
-import { FaArrowsLeftRight, FaBath, FaBed, FaCar, FaCheck, FaChevronRight, FaShower } from 'react-icons/fa6';
+import { FaArrowsLeftRight, FaBath, FaBed, FaCar, FaCheck, FaChevronRight, FaShower, FaWhatsapp } from 'react-icons/fa6';
 import { Gallery } from '@/components/property/Gallery';
 import { LeadForm } from '@/components/property/LeadForm';
 import { PropertyMap } from '@/components/property/PropertyMap';
 import { TrackView } from '@/components/property/TrackView';
+import { WhatsAppQr } from '@/components/property/WhatsAppQr';
 import { PropertyLink } from '@/components/PropertyLink';
 import { PropertyWatermark } from '@/components/PropertyWatermark';
 import { JsonLd } from '@/components/JsonLd';
 import { getPropertyDetail, getPropertyDetailParams, getSiteSettings, phoneLink, SITE_URL } from '@/content';
 import { formatPrice, placeName } from '@/lib/format';
 import { listingsHref } from '@/lib/listings-url';
+import { propertyWhatsappLink } from '@/lib/property-whatsapp';
 import { propertyGraph } from '@/lib/seo/jsonld';
 import { openGraphDefaults } from '@/lib/seo/metadata';
 import { ogPhoto, ogPhotoImage } from '@/lib/seo/og';
@@ -85,6 +87,9 @@ function CheckList({ items, columns = 2 }: { items: string[]; columns?: 2 | 3 })
 export default async function PropertyPage({ params }: { params: Params }) {
   const [property, site] = await Promise.all([loadProperty(params), getSiteSettings()]);
   const baseUrl = SITE_URL;
+  // Before the custom-domain cutover, shared links still open this Vercel site's property page.
+  const contactSiteUrl = process.env.SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : SITE_URL);
+  const whatsappHref = propertyWhatsappLink(site.whatsapp, property, contactSiteUrl);
   const { description } = property;
   const wholePrice = formatPrice(property.price);
   const currency = (value: number) => formatPrice(value);
@@ -225,6 +230,15 @@ export default async function PropertyPage({ params }: { params: Params }) {
               ) : null}
             </section>
 
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand px-5 py-3 text-center font-semibold text-white hover:bg-brand-dark lg:hidden"
+            >
+              <FaWhatsapp aria-hidden className="shrink-0 text-xl" /> Agendar visita pelo WhatsApp
+            </a>
+
             {property.features.length > 0 ? (
             <section aria-labelledby="caracteristicas-titulo">
               <h2 id="caracteristicas-titulo" className="border-b-2 border-brand pb-2 text-2xl font-bold">
@@ -255,6 +269,8 @@ export default async function PropertyPage({ params }: { params: Params }) {
               </h2>
               <LeadForm propertyCode={property.code} whatsapp={site.whatsapp} />
             </section>
+
+            <WhatsAppQr href={whatsappHref} qrHref={new URL(`/api/imoveis/${encodeURIComponent(property.code)}/whatsapp`, contactSiteUrl).href} code={property.code} />
 
             <section aria-label="Ficha do imóvel" className="border border-line p-5">
               <dl className="text-sm">
