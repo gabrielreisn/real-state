@@ -47,7 +47,17 @@ In the GA4 web stream, leave **Enhanced measurement → Page views → Page chan
 - **Images** are served by Sanity's image CDN. A custom `next/image` loader ([sanity-image-loader.ts](apps/web/src/lib/sanity-image-loader.ts)) requests each size with `auto=format` (WebP for browsers that support it) and a quality of 60, 75 or 85.
 - **Pages** such as A Empresa (`/sobre`) and Financiamento are Sanity `page` documents, rendered by `apps/web/src/app/[page]`. They appear in the "Informações" menu in menu order.
 - **Property submissions** from "Cadastre seu Imóvel" are validated by a server action and saved to Sanity as private documents (IDs like `submission.<uuid>`, never readable through the public API). They show up in Studio under "Cadastros de imóveis". The web app needs `SANITY_API_WRITE_TOKEN` for this.
-- **Leads** go from the contact form through a server action to `POST /leads` on the API, then into Postgres. The API is never exposed publicly and has no endpoint for reading leads.
+- **Leads** go from the property contact form through a server action to Resend. The notification includes the visitor's contact details, message, property code, price and link. When supplied, the visitor's email becomes Reply-To. A configured `API_INTERNAL_URL` also enables best-effort archival via `POST /leads` into Postgres. Email does not require that API to be deployed.
+
+### Lead notification email
+
+1. Connect the free [Resend Vercel integration](https://vercel.com/marketplace/resend) to the web project; it sets `RESEND_API_KEY`. For local development, set the key in the root `.env`.
+2. Verify the sending domain in Resend by adding the DNS records it supplies. Use a domain you control; Hotmail can receive notifications but cannot be your Resend sending domain.
+3. Set `LEAD_EMAIL_FROM` (for example, `Alex Nolasco Imóveis <contato@alexnolasco.com.br>`) and `LEAD_EMAIL_TO` (`alexnolascoimoveis@hotmail.com`) in the Vercel environment. Keep secrets server-side.
+4. Set `SITE_URL` to the public website URL so email links point to the intended deployment. Redeploy after adding environment variables.
+5. Production requires the existing Redis REST variables (`KV_REST_API_URL` / `KV_REST_API_TOKEN`, or their `UPSTASH_REDIS_REST_*` equivalents). Contact submissions are limited to five per IP per ten minutes, using hashed keys. The honeypot silently discards bots; Resend idempotency keys suppress identical submissions in the same ten-minute window.
+
+For a delivery test, submit the property form with a real contact address and check both the Resend delivery log and the recipient inbox. Until sender and API credentials are configured, the form reports an error and offers WhatsApp instead of claiming an email was sent.
 
 ## Sanity
 
