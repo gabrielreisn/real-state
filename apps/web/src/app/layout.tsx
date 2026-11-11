@@ -47,6 +47,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="pt-BR" className={schibsted.variable}>
       <body className="flex min-h-dvh flex-col">
+        {!preview && <GoogleAnalytics />}
         <a
           href="#conteudo"
           className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3 focus:font-semibold focus:text-brand"
@@ -61,7 +62,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Footer />
         <WhatsAppButton />
         <JsonLd data={graph} />
-        {!preview && <GoogleAnalytics />}
         {/* Refreshes cached content when it changes in Sanity; in preview mode, on every draft edit. */}
         <SanityLive />
         {preview ? (
