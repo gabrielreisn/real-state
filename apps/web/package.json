@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@next/third-parties": "^16.4.6",
     "@portabletext/react": "^8.0.1",
     "@sanity/client": "^8.15.0",
     "@sanity/image-url": "^2.1.1",
