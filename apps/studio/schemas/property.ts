@@ -1,6 +1,7 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
 import { AutoImageDescriptionInput } from '../components/AutoImageDescriptionInput';
 import { CurrencyInput } from '../components/CurrencyInput';
+import { VideoInput } from '../components/VideoInput';
 import { slugify } from './slug';
 
 const count = (name: string, title: string) =>
@@ -24,10 +25,15 @@ export const property = defineType({
   groups: [
     { name: 'main', title: 'Principal', default: true },
     { name: 'specs', title: 'Ficha técnica' },
-    { name: 'media', title: 'Fotos' },
+    { name: 'media', title: 'Fotos e vídeos' },
     { name: 'content', title: 'Descrição' },
   ],
   fields: [
+    defineField({
+      name: 'available', title: 'Disponível', type: 'boolean', initialValue: true,
+      group: ['main', 'specs', 'media', 'content'],
+      description: 'Desative para ocultar o imóvel do site e dos buscadores. O endereço do imóvel passa a retornar 404 após publicar.',
+    }),
     defineField({ name: 'code', title: 'Código', type: 'string', group: 'main', validation: (r) => r.required() }),
     defineField({
       name: 'title',
@@ -130,7 +136,21 @@ export const property = defineType({
       validation: (r) => r.required(),
     }),
     // Do not give this member a custom name: existing imported photos have `_type: "image"`.
-    defineField({ name: 'gallery', title: 'Galeria', type: 'array', group: 'media', of: [imageWithAlt('Foto')] }),
+    defineField({
+      name: 'gallery', title: 'Galeria', type: 'array', group: 'media',
+      description: 'Fotos e vídeos na ordem em que aparecem no carrossel. Arraste para reorganizar.',
+      of: [imageWithAlt('Foto'), defineArrayMember({
+        type: 'file', name: 'galleryVideo', title: 'Vídeo',
+        options: { accept: 'video/mp4,video/webm' },
+        components: { input: VideoInput },
+        fields: [
+          defineField({ name: 'alt', title: 'Descrição do vídeo', type: 'string', initialValue: 'Vídeo do imóvel', validation: (r) => r.required() }),
+          defineField({ name: 'poster', title: 'Capa do vídeo', type: 'image', readOnly: true, description: 'Gerada automaticamente a partir de um quadro do vídeo.' }),
+          defineField({ name: 'posterFor', title: 'Vídeo da capa', type: 'string', hidden: true }),
+        ],
+        validation: (r) => r.required().custom((value) => value?.asset ? true : 'Envie o arquivo de vídeo.'),
+      })],
+    }),
 
     defineField({ name: 'excerpt', title: 'Chamada', description: 'Texto curto dos destaques.', type: 'text', rows: 3, group: 'content', validation: (r) => r.max(220) }),
     defineField({ name: 'summary', title: 'Resumo da ficha', description: 'Linha abaixo do título da página.', type: 'text', rows: 2, group: 'content' }),
@@ -186,7 +206,7 @@ export const property = defineType({
   ],
   orderings: [{ title: 'Mais recentes', name: 'codeDesc', by: [{ field: 'code', direction: 'desc' }] }],
   preview: {
-    select: { type: 'type', neighborhood: 'neighborhood.name', city: 'city', code: 'code', media: 'coverImage' },
-    prepare: ({ type, neighborhood, city, code, media }) => ({ title: `${type ?? 'Imóvel'} em ${neighborhood ?? city ?? '—'}`, subtitle: `Cód. ${code}`, media }),
+    select: { type: 'type', neighborhood: 'neighborhood.name', city: 'city', code: 'code', media: 'coverImage', available: 'available' },
+    prepare: ({ type, neighborhood, city, code, media, available }) => ({ title: `${type ?? 'Imóvel'} em ${neighborhood ?? city ?? '—'}`, subtitle: `${available === false ? 'Indisponível' : 'Disponível'} · Cód. ${code}`, media }),
   },
 });

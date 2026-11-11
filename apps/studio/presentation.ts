@@ -19,6 +19,7 @@ export type PathFields = {
   slug?: string;
   name?: string;
   city?: string;
+  available?: boolean;
 };
 
 const LISTINGS: Location = { title: 'Imóveis à venda', href: '/imoveis' };
@@ -31,7 +32,7 @@ const LISTINGS: Location = { title: 'Imóveis à venda', href: '/imoveis' };
 export function documentLocations(schemaType: string, doc: PathFields): Location[] {
   switch (schemaType) {
     case 'property':
-      if (!doc.slug || !doc.code) return [];
+      if (!doc.slug || !doc.code || doc.available === false) return [];
       return [{ title: doc.title || `${doc.type} · código ${doc.code}`, href: `/imovel/${doc.code}/${doc.slug}` }, LISTINGS];
     case 'neighborhood':
       return doc.name && doc.city ? [{ title: `Imóveis em ${doc.name}, ${doc.city}`, href: `/imoveis/${slugify(doc.city)}/${slugify(doc.name)}` }] : [];
@@ -45,7 +46,7 @@ export function documentLocations(schemaType: string, doc: PathFields): Location
 }
 
 const SELECT: Record<string, Record<string, string>> = {
-  property: { title: 'title', type: 'type', code: 'code', slug: 'slug.current' },
+  property: { title: 'title', type: 'type', code: 'code', slug: 'slug.current', available: 'available' },
   neighborhood: { name: 'name', city: 'city' },
   page: { title: 'title', slug: 'slug.current' },
   siteSettings: {},
@@ -70,6 +71,7 @@ export const resolve: PresentationPluginOptions['resolve'] = {
       defineLocations({
         select,
         resolve: (doc) => {
+          if (schemaType === 'property' && doc?.available === false) return { message: 'Imóvel indisponível: oculto no site e nos buscadores.', tone: 'caution' };
           const locations = documentLocations(schemaType, (doc ?? {}) as PathFields);
           if (locations.length > 0) return { locations, ...(schemaType === 'siteSettings' ? { message: 'Usado em todas as páginas do site.' } : {}) };
           return MISSING[schemaType] ? { message: MISSING[schemaType], tone: 'caution' } : null;

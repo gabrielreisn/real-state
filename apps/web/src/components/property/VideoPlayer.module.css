@@ -1,0 +1,29 @@
+.player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #141414;
+}
+
+/* Keep gallery navigation/fullscreen and the library's playback controls. */
+.player :global(.media-buffering-indicator),
+.player :global(.media-fullscreen-button),
+.player :global(.media-pip-button),
+.player :global(.media-settings-button),
+.player :global(.video-controls-center-seek) {
+  display: none;
+}
+
+.loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: #141414;
+}
+
+.loading:not([data-visible]) {
+  display: none;
+}

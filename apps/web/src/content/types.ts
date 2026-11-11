@@ -1,4 +1,6 @@
 export type Image = {
+  key?: string;
+  kind?: 'image';
   src: string;
   alt: string;
   width?: number;
@@ -8,6 +10,13 @@ export type Image = {
   /** The site-wide mark, shown only when this particular photo opts in. */
   watermark?: string;
 };
+
+export type Video = {
+  key?: string;
+  kind: 'video'; src: string; alt: string; mimeType: string;
+  poster?: Image; width?: number; height?: number;
+};
+export type GalleryMedia = Image | Video;
 
 export type PropertySummary = {
   id: string;
@@ -54,7 +63,7 @@ export type PropertyDetail = PropertySummary & {
   inCondominium?: boolean;
   condoFee?: number;
   iptu?: number;
-  gallery: Image[];
+  gallery: GalleryMedia[];
   description: {
     /** Free text, one paragraph per blank line. Imported listings only have this. */
     body: string;

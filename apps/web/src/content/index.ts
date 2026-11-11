@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import { sanityFetch } from '@/lib/sanity/live';
 import { IMAGE_PROJECTION, type SanityImage, toImage } from '@/lib/sanity/image';
+import { GALLERY_PROJECTION, toGalleryMedia, type RawGalleryMedia } from '@/lib/sanity/gallery';
 import type { FeatureGroup, Image, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
 
 export { legacy, phoneLink, whatsappLink } from './site';
@@ -10,7 +11,7 @@ export type * from './types';
 
 export const SITE_URL = process.env.SITE_URL ?? 'https://www.alexnolasco.com.br';
 
-const LISTED = /* groq */ `_type == "property" && defined(slug.current) && defined(coverImage.asset) && (defined(neighborhood) || defined(city))`;
+const LISTED = /* groq */ `_type == "property" && available != false && defined(slug.current) && defined(coverImage.asset) && (defined(neighborhood) || defined(city))`;
 
 /** Photos in each card's carousel. The rest are on the listing page. */
 export const CARD_PHOTOS = 5;
@@ -20,6 +21,7 @@ const LIGHT_IMAGE_PROJECTION = /* groq */ `{ alt, watermark, crop, hotspot, asse
 const SUMMARY_FIELDS = /* groq */ `
   "id": code,
   code,
+  available,
   "slug": slug.current,
   type,
   purpose,
@@ -36,14 +38,15 @@ const SUMMARY_FIELDS = /* groq */ `
   "neighborhood": coalesce(neighborhood->name, ""),
   "state": neighborhood->state,
   "image": coverImage ${IMAGE_PROJECTION},
-  "photos": gallery[0...${CARD_PHOTOS + 1}] ${LIGHT_IMAGE_PROJECTION},
-  "photoCount": count(gallery),
+  "photos": gallery[_type == "image"][0...${CARD_PHOTOS + 1}] ${LIGHT_IMAGE_PROJECTION},
+  "photoCount": count(gallery[_type == "image"]),
   "watermark": *[_id == "siteSettings"][0].watermarkImage ${IMAGE_PROJECTION}
 `;
 
 type RawSummary = {
   id: string;
   code: string;
+  available: boolean | null;
   slug: string;
   type: string;
   purpose: 'Venda' | null;
@@ -103,7 +106,7 @@ function toSummary(raw: RawSummary): PropertySummary {
   };
 }
 
-const summaries = (raws: (RawSummary | null)[] | null) => (raws ?? []).filter((raw) => raw?.image?.asset).map((raw) => toSummary(raw!));
+const summaries = (raws: (RawSummary | null)[] | null) => (raws ?? []).filter((raw) => raw?.available !== false && raw?.image?.asset).map((raw) => toSummary(raw!));
 
 // cache() dedupes calls within one request, e.g. the layout and the page both asking for settings.
 export const getProperties = cache(async () =>
@@ -178,7 +181,7 @@ type RawDetail = RawSummary & {
   condoFee: number | null;
   iptu: number | null;
   rawArea: number | null;
-  gallery: SanityImage[] | null;
+  gallery: (RawGalleryMedia | null)[] | null;
   description: Partial<Record<keyof PropertyDetail['description'], string | string[] | null>> | null;
   features: FeatureGroup[] | null;
   similar: (RawSummary | null)[] | null;
@@ -198,7 +201,7 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
       condoFee,
       iptu,
       "rawArea": area,
-      "gallery": gallery[] ${IMAGE_PROJECTION},
+      "gallery": gallery[] ${GALLERY_PROJECTION},
       description,
       "features": featureGroups[] { title, "items": coalesce(items, []) },
       // Hand-picked when set; otherwise other listings in the same neighborhood.
@@ -216,7 +219,7 @@ export const getPropertyDetail = cache(async (id: string): Promise<PropertyDetai
   const list = (value: string | string[] | null | undefined) => (Array.isArray(value) ? value : []);
   const description = raw.description ?? {};
   const watermark = toImage(raw.watermark)?.src;
-  const gallery = (raw.gallery ?? []).map((image) => toImage(image, watermark)).filter((image) => image !== null);
+  const gallery = (raw.gallery ?? []).map((media) => toGalleryMedia(media, watermark)).filter((media) => media !== null);
 
   return {
     ...summary,

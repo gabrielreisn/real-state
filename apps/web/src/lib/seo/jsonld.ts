@@ -165,7 +165,7 @@ export function propertyGraph({
   const type = residenceType(property.type);
   const isAccommodation = type !== 'Place';
   const amenities = property.features.flatMap((group) => group.items);
-  const images = property.gallery.slice(0, 10).map((image) => image.src);
+  const images = property.gallery.filter((media) => media.kind !== 'video').slice(0, 10).map((image) => image.src);
   const description = property.excerpt || property.summary || property.description.body.slice(0, 300);
 
   const place: Node = {

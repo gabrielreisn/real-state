@@ -69,6 +69,12 @@ pnpm dlx tsx apps/web/scripts/preview-emails.ts /tmp/real-state-email-previews
 
 ## Sanity
 
+### Property availability and gallery videos
+
+Each property has a **Disponível** toggle at the top of every editing tab. It defaults to enabled, including existing properties. Publish after switching it off to remove the listing from public results, featured/related properties, and the sitemap. Its URL returns HTTP 404 with `noindex`; the document remains editable in Studio.
+
+Under **Fotos e vídeos**, the **Galeria** accepts photos and MP4/WebM videos in any order. Choose **Vídeo** to upload a video file; Studio automatically captures a frame for its thumbnail and blurred loading preview. Video.js provides the carousel's playback controls and accessibility, with the gallery handling fullscreen. Listing-card carousels use the gallery's photos.
+
 The Studio has two workspaces, one per dataset of project `1ai1aq1e`:
 
 - **Produção** (`/production`): the real content, read by the deployed site.
