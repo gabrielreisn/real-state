@@ -151,15 +151,16 @@ export const getNeighborhoods = cache(
 );
 
 export const getSiteSettings = cache(async () => {
-  const settings = await sanityFetch<SiteSettings | null>(
+  const settings = await sanityFetch<(Omit<SiteSettings, 'logo'> & { logo: SanityImage }) | null>(
     `*[_id == "siteSettings"][0] {
       name, brandName, role, creci, phone, whatsapp, email, street, district, postalCode, addressLocality, addressRegion,
+      "logo": logo ${IMAGE_PROJECTION},
       "openingHours": coalesce(openingHours[]{ "days": coalesce(days, []), opens, closes }, []),
       "sameAs": coalesce(sameAs, [])
     }`,
   );
   if (!settings) throw new Error('The "siteSettings" document is missing from the dataset. Create it in Sanity Studio, or copy a dataset that has it.');
-  return settings;
+  return { ...settings, logo: toImage(settings.logo) };
 });
 
 export const getPropertyDetailParams = cache(async () =>

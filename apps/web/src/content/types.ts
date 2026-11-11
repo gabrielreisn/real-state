@@ -87,6 +87,7 @@ export type NeighborhoodEntity = { name: string; slug: string; city: string; sta
 export type Neighborhood = NeighborhoodEntity & { count: number };
 
 export type SiteSettings = {
+  logo?: Image | null;
   name: string;
   brandName: string;
   role: string;
