@@ -4,12 +4,13 @@ import { cache } from 'react';
 import { sanityFetch } from '@/lib/sanity/live';
 import { IMAGE_PROJECTION, type SanityImage, toImage } from '@/lib/sanity/image';
 import { GALLERY_PROJECTION, toGalleryMedia, type RawGalleryMedia } from '@/lib/sanity/gallery';
+import { getSiteUrl } from '@/lib/site-url';
 import type { FeatureGroup, Image, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
 
 export { legacy, phoneLink, whatsappLink } from './site';
 export type * from './types';
 
-export const SITE_URL = process.env.SITE_URL ?? 'https://www.alexnolasco.com.br';
+export const SITE_URL = getSiteUrl();
 
 const LISTED = /* groq */ `_type == "property" && available != false && defined(slug.current) && defined(coverImage.asset) && (defined(neighborhood) || defined(city))`;
 
@@ -151,15 +152,16 @@ export const getNeighborhoods = cache(
 );
 
 export const getSiteSettings = cache(async () => {
-  const settings = await sanityFetch<SiteSettings | null>(
+  const settings = await sanityFetch<(Omit<SiteSettings, 'logo'> & { logo: SanityImage }) | null>(
     `*[_id == "siteSettings"][0] {
       name, brandName, role, creci, phone, whatsapp, email, street, district, postalCode, addressLocality, addressRegion,
+      "logo": logo ${IMAGE_PROJECTION},
       "openingHours": coalesce(openingHours[]{ "days": coalesce(days, []), opens, closes }, []),
       "sameAs": coalesce(sameAs, [])
     }`,
   );
   if (!settings) throw new Error('The "siteSettings" document is missing from the dataset. Create it in Sanity Studio, or copy a dataset that has it.');
-  return settings;
+  return { ...settings, logo: toImage(settings.logo) };
 });
 
 export const getPropertyDetailParams = cache(async () =>
