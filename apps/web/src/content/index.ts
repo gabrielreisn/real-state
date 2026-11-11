@@ -4,12 +4,13 @@ import { cache } from 'react';
 import { sanityFetch } from '@/lib/sanity/live';
 import { IMAGE_PROJECTION, type SanityImage, toImage } from '@/lib/sanity/image';
 import { GALLERY_PROJECTION, toGalleryMedia, type RawGalleryMedia } from '@/lib/sanity/gallery';
+import { getSiteUrl } from '@/lib/site-url';
 import type { FeatureGroup, Image, MenuPage, Neighborhood, Page, PropertyDetail, PropertySummary, SiteSettings } from './types';
 
 export { legacy, phoneLink, whatsappLink } from './site';
 export type * from './types';
 
-export const SITE_URL = process.env.SITE_URL ?? 'https://www.alexnolasco.com.br';
+export const SITE_URL = getSiteUrl();
 
 const LISTED = /* groq */ `_type == "property" && available != false && defined(slug.current) && defined(coverImage.asset) && (defined(neighborhood) || defined(city))`;
 
