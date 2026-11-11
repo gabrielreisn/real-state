@@ -32,7 +32,7 @@ export const property = defineType({
     defineField({
       name: 'available', title: 'Disponível', type: 'boolean', initialValue: true,
       group: ['main', 'specs', 'media', 'content'],
-      description: 'Desative para ocultar o imóvel do site e dos buscadores. O endereço do imóvel passa a retornar 404 após publicar.',
+      description: 'Desative e publique para ocultar o imóvel do site e impedir sua indexação pelos buscadores.',
     }),
     defineField({ name: 'code', title: 'Código', type: 'string', group: 'main', validation: (r) => r.required() }),
     defineField({
