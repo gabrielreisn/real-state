@@ -1,9 +1,8 @@
-import { ImageResponse } from 'next/og';
-import { BrandMark } from '@/lib/seo/brand-mark';
+import { siteIcon } from '@/lib/seo/site-icon';
 
 export const size = { width: 512, height: 512 };
 export const contentType = 'image/png';
 
 export default function Icon() {
-  return new ImageResponse(<BrandMark size={size.width} />, size);
+  return siteIcon(size);
 }
