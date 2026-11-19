@@ -23,12 +23,13 @@ export async function sendFormEmail(content: EmailContent, { replyTo, idempotenc
   const key = process.env.RESEND_API_KEY;
   const domain = process.env.RESEND_EMAIL_DOMAIN;
   const from = process.env.LEAD_EMAIL_FROM || (domain ? `Alex Nolasco Imóveis <contato@${domain}>` : undefined);
-  const to = process.env.LEAD_EMAIL_TO;
-  if (!key || !from || !to) throw new Error('Form email requires RESEND_API_KEY, a sender domain/address and LEAD_EMAIL_TO.');
+  // One address or several, separated by commas: "owner@example.com, partner@example.com".
+  const to = (process.env.LEAD_EMAIL_TO ?? '').split(',').map((address) => address.trim()).filter(Boolean);
+  if (!key || !from || to.length === 0) throw new Error('Form email requires RESEND_API_KEY, a sender domain/address and LEAD_EMAIL_TO.');
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
-    body: JSON.stringify({ from, to: [to], ...(replyTo ? { reply_to: replyTo } : {}), ...content }),
+    body: JSON.stringify({ from, to, ...(replyTo ? { reply_to: replyTo } : {}), ...content }),
     signal: AbortSignal.timeout(10_000), cache: 'no-store',
   });
   if (!response.ok) {

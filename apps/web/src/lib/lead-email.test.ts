@@ -43,6 +43,12 @@ describe('lead notification', () => {
     expect(options.headers['Idempotency-Key']).toBe('retry-key');
     expect(JSON.parse(options.body)).toMatchObject({ from: 'Site <site@example.com>', to: ['owner@example.com'], reply_to: lead.email });
   });
+  it('sends to every address in a comma-separated recipient list', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'key'); vi.stubEnv('LEAD_EMAIL_FROM', 'from@example.com'); vi.stubEnv('LEAD_EMAIL_TO', 'owner@example.com, partner@example.com,');
+    const request = vi.fn().mockResolvedValue(Response.json({ id: 'email-id' })); vi.stubGlobal('fetch', request);
+    await sendLeadEmail({ lead, property, site, idempotencyKey: 'test' });
+    expect(JSON.parse(request.mock.calls[0][1].body).to).toEqual(['owner@example.com', 'partner@example.com']);
+  });
   it('does not pretend to send without configuration', async () => {
     vi.stubEnv('RESEND_API_KEY', '');
     const request = vi.fn(); vi.stubGlobal('fetch', request);
